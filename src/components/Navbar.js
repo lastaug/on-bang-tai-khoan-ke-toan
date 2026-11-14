@@ -12,6 +12,8 @@ export function Navbar({
   toggleSound,
   onOpenSearch,
   isSidebarCollapsed,
+  isFocusMode,
+  onToggleFocusMode,
   onToggleMobileMenu
 }) {
   const viewTitles = {
@@ -40,16 +42,14 @@ export function Navbar({
   };
 
   return React.createElement('header', {
-    className: `sticky top-0 z-20 h-16 border-b transition-all duration-300 glass-header border-neutral-200/70 dark:border-neutral-800/80 px-4 md:px-8 flex items-center justify-between`
+    className: `sticky top-0 z-20 transition-all duration-300 ease-in-out glass-header border-neutral-200/70 dark:border-neutral-800/80 px-4 md:px-8 flex items-center justify-between ${
+      isFocusMode
+        ? '-translate-y-full opacity-0 pointer-events-none h-0 overflow-hidden border-b-0 py-0'
+        : 'translate-y-0 opacity-100 h-16 border-b'
+    }`
   }, [
-    // Left: Mobile Menu Trigger + View Breadcrumb
+    // Left: Brand/Logo + View Breadcrumb
     React.createElement('div', { key: 'left', className: 'flex items-center gap-3' }, [
-      React.createElement('button', {
-        key: 'mobile-menu',
-        onClick: onToggleMobileMenu,
-        className: 'p-2 rounded-xl text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 md:hidden'
-      }, React.createElement(Icons.Menu, { size: 20 })),
-
       React.createElement('div', {
         key: 'mobile-logo',
         className: 'w-8 h-8 rounded-lg overflow-hidden border border-pink-200 dark:border-pink-900/60 shadow-sm md:hidden shrink-0'
@@ -116,7 +116,19 @@ export function Navbar({
       }, [
         React.createElement(Icons.Play, { key: 'play-icon', size: 14 }),
         'Tạo buổi học'
-      ])
+      ]),
+
+      // Circular 3-Bars Navigation Toggle Button (Góc trên bên phải)
+      React.createElement('button', {
+        key: 'nav-toggle-btn',
+        onClick: () => {
+          sound.playClick();
+          if (onToggleFocusMode) onToggleFocusMode();
+        },
+        title: 'Ẩn thanh công cụ & điều hướng',
+        'aria-label': 'Ẩn thanh công cụ & điều hướng',
+        className: 'w-9 h-9 md:w-10 md:h-10 rounded-full flex items-center justify-center transition-all duration-200 active:scale-95 shrink-0 shadow-sm bg-neutral-100 hover:bg-neutral-200/80 dark:bg-neutral-800 dark:hover:bg-neutral-700/80 border border-neutral-200/80 dark:border-neutral-700/80 text-neutral-700 dark:text-neutral-200'
+      }, React.createElement(Icons.Menu, { size: 19 }))
     ])
   ]);
 }

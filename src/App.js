@@ -27,7 +27,8 @@ export function App() {
   const [viewParams, setViewParams] = useState({});
   const [theme, setTheme] = useState('light');
   const [soundEnabled, setSoundEnabled] = useState(true);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => localStorage.getItem('tk_sidebar_collapsed') === 'true');
+  const [isFocusMode, setIsFocusMode] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Data states
@@ -83,6 +84,16 @@ export function App() {
   useEffect(() => {
     loadDatabase();
   }, [loadDatabase]);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && isFocusMode) {
+        setIsFocusMode(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isFocusMode]);
 
   // Theme switcher
   const handleToggleTheme = () => {
@@ -295,16 +306,20 @@ export function App() {
       key: 'sidebar',
       currentView,
       setView,
-      isCollapsed: isSidebarCollapsed,
-      toggleCollapse: () => setIsSidebarCollapsed(prev => !prev),
+      isCollapsed: isFocusMode || isSidebarCollapsed,
+      toggleCollapse: () => setIsSidebarCollapsed(prev => {
+        const next = !prev;
+        localStorage.setItem('tk_sidebar_collapsed', String(next));
+        return next;
+      }),
       stats: globalStats
     }),
 
     // Main Content Area Wrapper
     React.createElement('div', {
       key: 'main-wrapper',
-      className: `flex-1 flex flex-col transition-all duration-300 ${
-        isSidebarCollapsed ? 'md:pl-20' : 'md:pl-64'
+      className: `flex-1 flex flex-col transition-all duration-300 ease-in-out ${
+        isFocusMode || isSidebarCollapsed ? 'md:pl-0' : 'md:pl-64'
       }`
     }, [
       // Glass Header
@@ -321,6 +336,10 @@ export function App() {
           setIsSearchOpen(true);
         },
         isSidebarCollapsed,
+        isFocusMode,
+        onToggleFocusMode: () => {
+          setIsFocusMode(prev => !prev);
+        },
         onToggleMobileMenu: () => setIsMobileMenuOpen(prev => !prev)
       }),
 
@@ -431,7 +450,7 @@ export function App() {
     ]),
 
     // Mobile Bottom Navigation Bar
-    React.createElement(MobileNav, {
+    !isFocusMode && React.createElement(MobileNav, {
       key: 'mobile-nav',
       currentView,
       setView
@@ -542,6 +561,18 @@ export function App() {
           ]))
         )
       ])
-    ])
+    ]),
+
+    // Floating circular button to restore header & navigation when in focus mode
+    isFocusMode && React.createElement('button', {
+      key: 'floating-focus-btn',
+      onClick: () => {
+        sound.playClick();
+        setIsFocusMode(false);
+      },
+      title: 'Hiện lại thanh công cụ & điều hướng',
+      'aria-label': 'Hiện lại thanh công cụ & điều hướng',
+      className: 'fixed top-3 right-4 md:right-8 z-50 w-9 h-9 md:w-10 md:h-10 rounded-full bg-white/90 dark:bg-[#1c1c1e]/90 hover:bg-neutral-100 dark:hover:bg-neutral-800 backdrop-blur-xl border border-neutral-200/80 dark:border-neutral-700/80 text-neutral-700 dark:text-neutral-200 shadow-lg flex items-center justify-center transition-all duration-200 active:scale-95 animate-fade-in'
+    }, React.createElement(Icons.Menu, { size: 19 }))
   ]);
 }
