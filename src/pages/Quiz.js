@@ -1,5 +1,5 @@
 // Apple HIG Multiple Choice Quiz Component (Zero-Jitter & Arrow Key Navigation)
-import React, { useState, useEffect, useMemo, useCallback } from 'https://esm.sh/react@18.2.0';
+import React, { useState, useEffect, useCallback } from 'https://esm.sh/react@18.2.0';
 import { Icons } from '../components/Icons.js';
 import { sound } from '../services/audio.js';
 
@@ -111,7 +111,7 @@ export function Quiz({
         });
       }
     } else if (isAnswered) {
-      // Find next unanswered question or finish
+      // Finished
       sound.playComplete();
       setIsFinished(true);
       if (onCompleteSession) {
@@ -132,7 +132,7 @@ export function Quiz({
     const failedOnes = Object.values(answersMap).filter(a => !a.isCorrect).map(a => a.account);
     if (failedOnes.length > 0) {
       sound.playClick();
-      const newPrepared = failedOnes.map((acc, qIdx) => {
+      const newPrepared = failedOnes.map((acc) => {
         const isCodeToName = direction === 'code-to-name';
         const sameGroup = allAccounts.filter(a => a.code !== acc.code && a.group === acc.group);
         const otherAccounts = allAccounts.filter(a => a.code !== acc.code && a.group !== acc.group);
@@ -281,7 +281,7 @@ export function Quiz({
   const answeredCount = Object.keys(answersMap).length;
   const progressPct = Math.round(((currentIndex + 1) / preparedQuiz.length) * 100);
 
-  return React.createElement('div', { className: 'max-w-2xl mx-auto space-y-5 animate-fade-in pb-12 select-none' }, [
+  return React.createElement('div', { className: 'max-w-2xl mx-auto space-y-4 animate-fade-in pb-12 select-none' }, [
     // Top Bar: Back, Progress, Streak
     React.createElement('div', { key: 'top-bar', className: 'flex items-center justify-between gap-4' }, [
       React.createElement('button', {
@@ -318,13 +318,13 @@ export function Quiz({
     // Question Card
     React.createElement('div', {
       key: 'q-card',
-      className: 'p-6 md:p-8 rounded-3xl bg-white dark:bg-[#1c1c1e] border border-neutral-200/80 dark:border-neutral-800 shadow-sm space-y-4 text-center'
+      className: 'p-6 md:p-8 rounded-3xl bg-white dark:bg-[#1c1c1e] border border-neutral-200/80 dark:border-neutral-800 shadow-sm space-y-3 text-center'
     }, [
       React.createElement('div', { key: 'badge', className: 'inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400' },
         `Cấp ${currentQ.account.level} • Nhóm ${currentQ.account.group}`
       ),
 
-      React.createElement('div', { key: 'q-title', className: 'space-y-2' }, [
+      React.createElement('div', { key: 'q-title', className: 'space-y-1.5' }, [
         React.createElement('div', { key: 'sub', className: 'text-xs font-semibold text-neutral-400 uppercase tracking-widest' },
           currentQ.isCodeToName ? 'MÃ TÀI KHOẢN SAU ĐÂY CÓ TÊN LÀ GÌ?' : 'TÀI KHOẢN SAU ĐÂY CÓ SỐ HIỆU LÀ GÌ?'
         ),
@@ -337,17 +337,17 @@ export function Quiz({
       ])
     ]),
 
-    // 4 Options Grid (STABLE, FIXED LAYOUT - ZERO JITTER)
-    // - Every button has min-h-[64px], fixed border-2
-    // - Consistent font-semibold on text
-    // - Fixed 24px icon slot reserved on right side at all times to prevent layout shift
+    // 4 Options Grid (ABSOLUTELY FIXED LAYOUT - 0px MOVEMENT)
+    // - Every button has fixed height h-[64px], fixed border-2
+    // - Font weight is always font-semibold
+    // - Fixed 24px icon slot reserved at all times on the right
+    // - Colors change directly without CSS opacity (avoiding Windows ClearType antialiasing jump)
     React.createElement('div', { key: 'options-grid', className: 'grid grid-cols-1 gap-2.5' },
       currentQ.options.map((opt, idx) => {
         const optionNumber = idx + 1;
         const isSelected = currentAnswer?.selectedOption?.text === opt.text;
 
-        // Rock-solid fixed styling without layout displacement
-        let containerClass = 'bg-white dark:bg-[#1c1c1e] border-neutral-200/80 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 text-neutral-800 dark:text-neutral-200';
+        let containerClass = 'bg-white dark:bg-[#1c1c1e] border-neutral-200/80 dark:border-neutral-800 text-neutral-800 dark:text-neutral-200 hover:border-neutral-300 dark:hover:border-neutral-700';
         let keyPillClass = 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500';
         let iconContent = null;
 
@@ -361,7 +361,9 @@ export function Quiz({
             keyPillClass = 'bg-red-500 text-white';
             iconContent = React.createElement(Icons.XCircle, { size: 20, className: 'text-red-500' });
           } else {
-            containerClass = 'opacity-40 bg-white dark:bg-[#1c1c1e] border-neutral-200/60 dark:border-neutral-800 text-neutral-400 dark:text-neutral-500';
+            // Other options when answered: muted color directly without CSS opacity
+            containerClass = 'bg-neutral-50/70 dark:bg-neutral-900/40 border-neutral-200/50 dark:border-neutral-800 text-neutral-400 dark:text-neutral-500';
+            keyPillClass = 'bg-neutral-200/60 dark:bg-neutral-800 text-neutral-400';
           }
         }
 
@@ -369,17 +371,17 @@ export function Quiz({
           key: idx,
           disabled: isAnswered,
           onClick: () => handleSelectOption(opt),
-          className: `w-full min-h-[62px] px-4 py-3.5 rounded-2xl border-2 text-left flex items-center justify-between transition-colors ${containerClass}`
+          className: `w-full h-[64px] px-4 py-3 rounded-2xl border-2 text-left flex items-center justify-between transition-colors ${containerClass}`
         }, [
           // Left: Key badge (1, 2, 3, 4) + Option Text
           React.createElement('div', { key: 'left-block', className: 'flex items-center gap-3 min-w-0 pr-2' }, [
             React.createElement('span', {
               key: 'num-badge',
-              className: `w-7 h-7 rounded-lg text-xs font-bold flex items-center justify-center shrink-0 transition-colors ${keyPillClass}`
+              className: `w-7 h-7 rounded-lg text-xs font-bold flex items-center justify-center shrink-0 ${keyPillClass}`
             }, optionNumber),
             React.createElement('span', {
               key: 'txt',
-              className: `text-sm font-semibold leading-snug break-words ${!currentQ.isCodeToName ? 'font-mono text-base text-blue-600 dark:text-blue-400' : ''}`
+              className: `text-sm font-semibold leading-snug truncate ${!currentQ.isCodeToName ? 'font-mono text-base text-blue-600 dark:text-blue-400' : ''}`
             }, opt.text)
           ]),
 
@@ -392,8 +394,8 @@ export function Quiz({
       })
     ),
 
-    // Navigation & Explanation Bar (ArrowLeft / ArrowRight Support)
-    React.createElement('div', { key: 'nav-actions-bar', className: 'space-y-3 pt-1' }, [
+    // Navigation & Explanation Block (PERMANENTLY OCCUPIED - NO LAYOUT DISPLACEMENT)
+    React.createElement('div', { key: 'nav-actions-bar', className: 'space-y-2.5 pt-1' }, [
       // Previous & Next Navigation Buttons
       React.createElement('div', { key: 'nav-row', className: 'flex items-center justify-between gap-3' }, [
         React.createElement('button', {
@@ -401,10 +403,10 @@ export function Quiz({
           disabled: currentIndex === 0,
           onClick: handlePrev,
           title: 'Phím Mũi tên trái (←)',
-          className: `px-4 py-3 rounded-2xl border text-xs font-bold flex items-center gap-2 transition-all ${
+          className: `px-4 py-3 rounded-2xl border-2 text-xs font-bold flex items-center gap-2 transition-all ${
             currentIndex === 0
-              ? 'opacity-40 cursor-not-allowed border-neutral-200 dark:border-neutral-800'
-              : 'hover:bg-neutral-100 dark:hover:bg-neutral-800 border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 active:scale-95'
+              ? 'opacity-40 cursor-not-allowed border-neutral-200 dark:border-neutral-800 text-neutral-400'
+              : 'hover:bg-neutral-100 dark:hover:bg-neutral-800 border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300'
           }`
         }, [
           React.createElement(Icons.ArrowLeft, { size: 15 }),
@@ -415,10 +417,10 @@ export function Quiz({
           key: 'btn-next',
           onClick: handleNext,
           title: 'Phím Mũi tên phải (→) hoặc Enter',
-          className: `flex-1 py-3 px-5 rounded-2xl font-bold text-xs md:text-sm shadow-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-all ${
+          className: `flex-1 py-3 px-5 rounded-2xl border-2 font-bold text-xs md:text-sm shadow-sm flex items-center justify-center gap-2 transition-all ${
             isAnswered
-              ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-600/30'
-              : 'bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300'
+              ? 'bg-blue-600 hover:bg-blue-700 text-white border-blue-600 shadow-blue-600/30'
+              : 'bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 border-transparent'
           }`
         }, [
           currentIndex < preparedQuiz.length - 1
@@ -428,20 +430,31 @@ export function Quiz({
         ])
       ]),
 
-      // Explanation & Tip Box (Smooth appearance)
-      isAnswered && React.createElement('div', {
+      // Explanation & Tip Box (PERMANENT FIXED HEIGHT - ALWAYS IN PLACE)
+      // When not answered: displays clean hint placeholder so the page never jumps in height!
+      React.createElement('div', {
         key: 'explanation-box',
-        className: 'p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200/60 dark:border-neutral-700/60 space-y-2 animate-fade-in'
-      }, [
-        React.createElement('div', { className: 'flex items-center justify-between text-xs font-bold text-neutral-500' }, [
-          React.createElement('span', {}, `TÀI KHOẢN: ${currentQ.account.code} - ${currentQ.account.name}`),
-          React.createElement('span', { className: 'font-normal px-2 py-0.5 rounded bg-neutral-200/60 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300' }, currentQ.account.nature)
+        className: `min-h-[84px] p-3.5 rounded-2xl border-2 transition-colors flex flex-col justify-center ${
+          isAnswered
+            ? 'bg-neutral-50 dark:bg-neutral-800/60 border-neutral-200/60 dark:border-neutral-700/60'
+            : 'bg-neutral-50/50 dark:bg-neutral-900/30 border-dashed border-neutral-200/50 dark:border-neutral-800 text-neutral-400'
+        }`
+      }, isAnswered ? [
+        React.createElement('div', { key: 'top', className: 'flex items-center justify-between text-xs font-bold text-neutral-600 dark:text-neutral-300 mb-1' }, [
+          React.createElement('span', { key: 'acc' }, `TÀI KHOẢN: ${currentQ.account.code} - ${currentQ.account.name}`),
+          React.createElement('span', { key: 'nat', className: 'font-normal px-2 py-0.5 rounded bg-neutral-200/60 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300' }, currentQ.account.nature)
         ]),
         currentQ.account.tip && React.createElement('div', {
-          className: 'text-xs text-amber-700 dark:text-amber-300 flex items-start gap-1.5 pt-1'
+          key: 'tip',
+          className: 'text-xs text-amber-700 dark:text-amber-300 flex items-start gap-1.5'
         }, [
           React.createElement(Icons.Lightbulb, { size: 14, className: 'shrink-0 mt-0.5 text-amber-500' }),
-          React.createElement('span', {}, currentQ.account.tip)
+          React.createElement('span', { className: 'line-clamp-2' }, currentQ.account.tip)
+        ])
+      ] : [
+        React.createElement('div', { key: 'placeholder', className: 'flex items-center justify-center gap-2 text-xs text-neutral-400 select-none py-1' }, [
+          React.createElement(Icons.Lightbulb, { size: 15, className: 'text-neutral-300 dark:text-neutral-600' }),
+          'Chọn 1 trong 4 phương án trên (hoặc phím 1-4, mũi tên ←/→ để chuyển câu)'
         ])
       ])
     ])

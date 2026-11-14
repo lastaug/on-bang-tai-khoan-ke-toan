@@ -450,7 +450,12 @@ export function App() {
         className: 'relative bg-white dark:bg-[#1c1c1e] rounded-t-3xl p-6 space-y-4 max-h-[80vh] overflow-y-auto'
       }, [
         React.createElement('div', { className: 'flex items-center justify-between pb-2 border-b border-neutral-100 dark:border-neutral-800' }, [
-          React.createElement('span', { className: 'font-bold text-base' }, 'Menu điều hướng'),
+          React.createElement('div', { className: 'flex items-center gap-2.5' }, [
+            React.createElement('div', { className: 'w-8 h-8 rounded-lg overflow-hidden border border-pink-200 dark:border-pink-900/60 shadow-sm shrink-0 bg-pink-50' }, [
+              React.createElement('img', { src: './src/assets/kuromi.png', alt: 'Kuromi', className: 'w-full h-full object-cover' })
+            ]),
+            React.createElement('span', { className: 'font-bold text-base' }, 'TK Study')
+          ]),
           React.createElement('button', {
             onClick: () => setIsMobileMenuOpen(false),
             className: 'p-1 rounded-full text-neutral-400'

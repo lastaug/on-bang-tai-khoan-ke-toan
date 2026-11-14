@@ -49,8 +49,15 @@ export function Sidebar({ currentView, setView, isCollapsed, toggleCollapse, sta
       }, [
         React.createElement('div', {
           key: 'logo-box',
-          className: 'w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 text-white flex items-center justify-center font-bold text-lg shadow-sm shadow-blue-500/30 group-hover:scale-105 transition-transform'
-        }, 'TK'),
+          className: 'w-10 h-10 rounded-xl overflow-hidden bg-pink-50 dark:bg-pink-950/40 border border-pink-200 dark:border-pink-900/60 shadow-sm flex items-center justify-center group-hover:scale-105 transition-transform shrink-0'
+        }, [
+          React.createElement('img', {
+            key: 'kuromi-img',
+            src: './src/assets/kuromi.png',
+            alt: 'Kuromi Logo',
+            className: 'w-full h-full object-cover'
+          })
+        ]),
         !isCollapsed && React.createElement('div', { key: 'brand-text', className: 'overflow-hidden' }, [
           React.createElement('div', { key: 'app-name', className: 'font-semibold tracking-tight text-neutral-900 dark:text-neutral-100 flex items-center gap-1.5' }, [
             'TK Study',

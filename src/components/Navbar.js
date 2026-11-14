@@ -50,6 +50,17 @@ export function Navbar({
         className: 'p-2 rounded-xl text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 md:hidden'
       }, React.createElement(Icons.Menu, { size: 20 })),
 
+      React.createElement('div', {
+        key: 'mobile-logo',
+        className: 'w-8 h-8 rounded-lg overflow-hidden border border-pink-200 dark:border-pink-900/60 shadow-sm md:hidden shrink-0'
+      }, [
+        React.createElement('img', {
+          src: './src/assets/kuromi.png',
+          alt: 'Kuromi',
+          className: 'w-full h-full object-cover'
+        })
+      ]),
+
       React.createElement('div', { key: 'titles', className: 'flex items-center gap-2' }, [
         React.createElement('h1', {
           key: 'page-title',
