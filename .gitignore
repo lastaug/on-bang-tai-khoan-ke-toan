@@ -10,8 +10,6 @@ Thumbs.db
 ehthumbs.db
 Desktop.ini
 
-# IDE & Testing
+# IDE
 .vscode/
 .idea/
-test-results/
-*.exe
