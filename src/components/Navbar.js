@@ -11,9 +11,8 @@ export function Navbar({
   soundEnabled,
   toggleSound,
   onOpenSearch,
-  isSidebarCollapsed,
-  isHeaderHidden,
-  onToggleHeader,
+  isNavVisible = true,
+  onToggleNav,
   onToggleMobileMenu
 }) {
   const viewTitles = {
@@ -43,7 +42,7 @@ export function Navbar({
 
   return React.createElement('header', {
     className: `sticky top-0 z-20 transition-all duration-300 ease-in-out glass-header border-neutral-200/70 dark:border-neutral-800/80 px-4 md:px-8 flex items-center justify-between ${
-      isHeaderHidden
+      !isNavVisible
         ? '-translate-y-full opacity-0 pointer-events-none h-0 overflow-hidden border-b-0 py-0'
         : 'translate-y-0 opacity-100 h-16 border-b'
     }`
@@ -123,10 +122,10 @@ export function Navbar({
         key: 'nav-toggle-btn',
         onClick: () => {
           sound.playClick();
-          if (onToggleHeader) onToggleHeader();
+          if (onToggleNav) onToggleNav();
         },
-        title: 'Ẩn thanh tiêu đề trên cùng',
-        'aria-label': 'Ẩn thanh tiêu đề trên cùng',
+        title: 'Ẩn thanh điều hướng & tiêu đề',
+        'aria-label': 'Ẩn thanh điều hướng & tiêu đề',
         className: 'w-9 h-9 md:w-10 md:h-10 rounded-full flex items-center justify-center transition-all duration-200 active:scale-95 shrink-0 shadow-sm bg-neutral-100 hover:bg-neutral-200/80 dark:bg-neutral-800 dark:hover:bg-neutral-700/80 border border-neutral-200/80 dark:border-neutral-700/80 text-neutral-700 dark:text-neutral-200'
       }, React.createElement(Icons.Menu, { size: 19 }))
     ])

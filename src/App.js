@@ -27,8 +27,7 @@ export function App() {
   const [viewParams, setViewParams] = useState({});
   const [theme, setTheme] = useState('light');
   const [soundEnabled, setSoundEnabled] = useState(true);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [isHeaderHidden, setIsHeaderHidden] = useState(false);
+  const [isNavVisible, setIsNavVisible] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Data states
@@ -89,13 +88,13 @@ export function App() {
 
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.key === 'Escape' && isHeaderHidden) {
-        setIsHeaderHidden(false);
+      if (e.key === 'Escape' && !isNavVisible) {
+        setIsNavVisible(true);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isHeaderHidden]);
+  }, [isNavVisible]);
 
   // Theme switcher
   const handleToggleTheme = () => {
@@ -308,8 +307,8 @@ export function App() {
       key: 'sidebar',
       currentView,
       setView,
-      isCollapsed: isSidebarCollapsed,
-      toggleCollapse: () => setIsSidebarCollapsed(prev => !prev),
+      isOpen: isNavVisible,
+      toggleCollapse: () => setIsNavVisible(false),
       stats: globalStats
     }),
 
@@ -317,7 +316,7 @@ export function App() {
     React.createElement('div', {
       key: 'main-wrapper',
       className: `flex-1 flex flex-col transition-all duration-300 ease-in-out ${
-        isSidebarCollapsed ? 'md:pl-20' : 'md:pl-64'
+        !isNavVisible ? 'md:pl-0' : 'md:pl-64'
       }`
     }, [
       // Glass Header
@@ -333,9 +332,8 @@ export function App() {
           sound.playClick();
           setIsSearchOpen(true);
         },
-        isSidebarCollapsed,
-        isHeaderHidden,
-        onToggleHeader: () => setIsHeaderHidden(prev => !prev),
+        isNavVisible,
+        onToggleNav: () => setIsNavVisible(prev => !prev),
         onToggleMobileMenu: () => setIsMobileMenuOpen(prev => !prev)
       }),
 
@@ -446,7 +444,7 @@ export function App() {
     ]),
 
     // Mobile Bottom Navigation Bar
-    !isHeaderHidden && React.createElement(MobileNav, {
+    !isNavVisible && React.createElement(MobileNav, {
       key: 'mobile-nav',
       currentView,
       setView
@@ -559,15 +557,15 @@ export function App() {
       ])
     ]),
 
-    // Floating circular button to restore header when header is hidden
-    isHeaderHidden && React.createElement('button', {
-      key: 'floating-focus-btn',
+    // Floating circular button to restore header & sidebar at the same time
+    !isNavVisible && React.createElement('button', {
+      key: 'floating-nav-btn',
       onClick: () => {
         sound.playClick();
-        setIsHeaderHidden(false);
+        setIsNavVisible(true);
       },
-      title: 'Hiện lại thanh tiêu đề trên cùng',
-      'aria-label': 'Hiện lại thanh tiêu đề trên cùng',
+      title: 'Hiện lại thanh điều hướng & tiêu đề',
+      'aria-label': 'Hiện lại thanh điều hướng & tiêu đề',
       className: 'fixed top-3 right-4 md:right-8 z-50 w-9 h-9 md:w-10 md:h-10 rounded-full bg-white/90 dark:bg-[#1c1c1e]/90 hover:bg-neutral-100 dark:hover:bg-neutral-800 backdrop-blur-xl border border-neutral-200/80 dark:border-neutral-700/80 text-neutral-700 dark:text-neutral-200 shadow-lg flex items-center justify-center transition-all duration-200 active:scale-95 animate-fade-in'
     }, React.createElement(Icons.Menu, { size: 19 }))
   ]);
