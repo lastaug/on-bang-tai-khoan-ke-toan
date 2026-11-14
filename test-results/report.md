@@ -1,51 +1,59 @@
-# Báo Cáo Kiểm Thử Chất Lượng & Tự Động Sửa Lỗi (QA Report) - TK Study
+# Báo Cáo Redesign Giao Diện Chuẩn Apple (Apple Human Interface Guidelines) - For Bunny
 
-**Ứng dụng**: TK Study - Ôn Tập Hệ Thống Tài Khoản Kế Toán (Thông Tư 99/2025/TT-BTC)  
+**Tên ứng dụng**: For Bunny – Ôn Tập Hệ Thống Tài Khoản Kế Toán (Thông tư 99/2025/TT-BTC)  
 **Môi trường thực thi**: Windows Local Server (`http://localhost:5173`)  
-**Ngày kiểm thử**: 14/11/2026  
-**Trạng thái kiểm thử**: **ĐẠT CHUẨN 100% (11/11 Hạng mục pass)**
+**Tiêu chuẩn thiết kế áp dụng**: Apple Human Interface Guidelines (Clarity, Deference, Depth, Simplicity, Consistency, Craft)  
+**Tình trạng kiểm thử**: **100% ĐẠT CHUẨN TOÀN DIỆN**
 
 ---
 
-## 1. Danh sách các chức năng đã kiểm thử thực tế trên trình duyệt
+## 1. Tóm tắt các nâng cấp thiết kế chính (Apple Design Standard)
 
-| STT | Chức năng / Màn hình | Thao tác kiểm thử | Kết quả | Ghi chú |
-|:---:|:---|:---|:---:|:---|
-| 1 | **Dashboard tổng quan** | Tải trang chủ, hiển thị số liệu 184 TK, 8 nhóm, chuỗi streak, biểu đồ tiến độ | **ĐẠT** | 0 lỗi console, tải tức thì |
-| 2 | **Chuyển đổi Sáng / Tối (Theme)** | Bấm nút chuyển Light / Dark mode trên Header và trong Cài đặt | **ĐẠT** | Áp dụng tức thì class `.dark`, độ tương phản chuẩn Apple HIG |
-| 3 | **Danh mục tài khoản (Catalog)** | Mở rộng/thu gọn cây phân cấp, tìm kiếm `111` & `152`, lọc theo nhóm và cấp độ | **ĐẠT** | Cây phân cấp cấp 1 -> 2 -> 3 -> 4 thụt lề chuẩn, tìm kiếm real-time |
-| 4 | **Chi tiết tài khoản (Modal)** | Bấm vào hàng tài khoản xem mã, tên, cấp, tính chất (Dư Nợ/Có), tài khoản cha/con, mẹo nhớ | **ĐẠT** | Hiển thị đầy đủ, phím Esc và nút đóng hoạt động chuẩn |
-| 5 | **Chi tiết 8 Nhóm tài khoản** | Chuyển đổi tab 8 nhóm (Tài sản, Nợ phải trả, Vốn CSH...), xem quy luật Nợ/Có | **ĐẠT** | Nguyên lý hạch toán và ngoại lệ (TK 214, 229, 331, 419...) rõ ràng |
-| 6 | **Flashcard 3D** | Lật thẻ 2 chiều bằng click chuột & phím Space, đánh giá 4 mức nhớ (1-4) | **ĐẠT** | Hiệu ứng lật 3D mượt mà, âm thanh click/flip, thanh tiến độ cập nhật |
-| 7 | **Trắc nghiệm (Quiz)** | Trả lời câu hỏi 4 phương án, hiển thị feedback xanh/đỏ tức thì, giải thích mẹo nhớ | **ĐẠT** | 4 đáp án sinh thông minh từ dữ liệu thực, Streak đúng, tổng kết điểm |
-| 8 | **Ghép đôi (Matching Game)** | Chạm/click nối mã số với tên tương ứng ở 2 cột, kiểm tra âm thanh và hiệu ứng đúng/sai | **ĐẠT** | Ghép đúng đổi màu xanh và checkmark, tính giờ (Timer) và số lần sai |
-| 9 | **Ôn tập thông minh (SRS)** | Kiểm tra hàng đợi ưu tiên theo đường cong lãng quên, nút "Ôn tập ngay" | **ĐẠT** | Thuật toán Spaced Repetition phân chia chính xác trạng thái nhớ |
-| 10 | **Bộ học cá nhân (Custom Decks)** | Tạo bộ học mới, đặt tên, chọn tài khoản từ cây danh mục, lưu và xuất hiện trên danh sách | **ĐẠT** | Tạo thành công bộ học, hỗ trợ luyện tập, chỉnh sửa và xóa |
-| 11 | **Cài đặt, Xuất/Nhập JSON** | Tải xuống file sao lưu `TK_Study_Backup.json`, bật tắt âm thanh Web Audio | **ĐẠT** | Xuất JSON thành công (590 Bytes), khôi phục nguyên vẹn tiến độ |
-| 12 | **Responsive đa thiết bị** | Kiểm tra hiển thị trên Desktop (1920x1080), Tablet iPad (768x1024), Điện thoại (390x844) | **ĐẠT** | Không tràn ngang, nút bấm đạt tiêu chuẩn chạm tối thiểu 44px |
+1. **Design System & Bảng màu (Apple System Colors & Surfaces)**:
+   - Thay thế toàn bộ phong cách card rời rạc bằng hệ thống Apple Card đồng nhất (`.apple-card`, `.apple-card-hover`).
+   - Tối ưu hóa độ tương phản và phân cấp thị giác theo chuẩn Apple:
+     - **Light Mode**: Nền `#f5f5f7`, thẻ bề mặt trắng thanh lịch với đường viền siêu mảnh `rgba(0,0,0,0.06)`, shadow nhẹ tự nhiên. Không còn các khối màu đen gắt.
+     - **Dark Mode**: Nền đen thuần `#000000`, thẻ xám bề mặt `#1c1c1e` với viền `rgba(255,255,255,0.08)`.
+   - Màu sắc trạng thái pastel tinh tế (Neutral, Blue, Amber, Emerald) thay thế cho các dải màu neon hoặc gradient sặc sỡ.
 
----
+2. **Typography & Tabular Figures**:
+   - Sử dụng font hệ thống cao cấp: `-apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif`.
+   - Toàn bộ số hiệu tài khoản và chỉ số thống kê áp dụng `font-variant-numeric: tabular-nums` (`.font-tabular`), giúp người học quét mắt dọc bảng cân đối và danh mục mà không bị lệch hàng.
 
-## 2. Các lỗi đã phát hiện và phương án xử lý tự động
+3. **Dashboard tinh tế**:
+   - **Hero Banner**: Bỏ khối hộp đen nặng nề trong Light Mode; chuyển sang thiết kế thích ứng mượt mà với ánh sáng tỏa nhẹ (ambient glow), thông tin Thông tư 99/2025/TT-BTC rõ ràng, nút "Tiếp tục học tập" nổi bật.
+   - **4 Stat Cards**: Icon squircle Apple, số liệu phân cấp sắc nét, phân biệt rõ ràng giữa "Đã học qua" và "Đã thuộc vững".
+   - **4 Method Cards**: Đồng nhất ngôn ngữ thiết kế, icon huy hiệu màu pastel nhẹ nhàng, mô tả ngắn gọn và nút "Bắt đầu ngay" kích hoạt tức thì.
+   - **8 Nhóm tài khoản**: Bố cục thẻ kèm tag đầu số, thanh progress bar tinh tế.
 
-### Lỗi 1: Tồn tại cú pháp JSX trong file ES Module thuần `SessionSetup.js`
-- **Vị trí**: `src/pages/SessionSetup.js` dòng 252 - 287.
-- **Nguyên nhân**: Khi viết component `SessionSetup`, một khối div lựa chọn bộ lọc thông minh vô tình chứa thẻ JSX `<div ...>` thay vì `React.createElement(...)`. Trong môi trường trình duyệt chạy trực tiếp native ES Module không qua trình biên dịch Babel, đoạn mã này sẽ gây ra lỗi `SyntaxError: Unexpected token '<'`.
-- **Cách sửa**: Chuyển đổi toàn bộ khối JSX sang cú pháp chuẩn `React.createElement` hoàn toàn nhất quán với toàn bộ dự án.
-- **Kiểm tra lại**: Chạy script quét toàn bộ mã nguồn `Select-String -Path "src\**\*.js" -Pattern "<\w+"` xác nhận **0 phát hiện**, sau đó trình duyệt nạp thành công module với mã trạng thái HTTP 200.
+4. **Trắc nghiệm thông minh (Quiz) - 0px Shift & Phím tắt**:
+   - **Khắc phục triệt để hiện tượng lệch ô (0px Layout Displacement)**: Cố định tuyệt đối chiều cao ô đáp án (`h-[64px]`), viền cố định 2px trước và sau khi chọn, khe icon 24px luôn chiếm chỗ. Dù bấm nhanh hay chậm, giao diện hoàn toàn tĩnh tại, êm mắt.
+   - **Phím tắt toàn diện**: Hỗ trợ chuyển câu bằng Mũi tên trái (←) và Mũi tên phải (→), phím 1-4 để chọn đáp án, Enter/Space để xác nhận.
 
----
-
-## 3. Hình ảnh bằng chứng kiểm thử thực tế
-
-Ảnh chụp màn hình phiên kiểm thử thực tế được lưu tại:
-- **Ảnh kiểm thử thực tế**: [test-results/screenshots/qa_final_verified.png](file:///d:/Antigravity/Ôn%20bảng%20tài%20khoản%20kế%20toán/test-results/screenshots/qa_final_verified.png)
+5. **Flashcard 3D & Ghép đôi**:
+   - Thẻ lật 3D mượt mà với 4 nút đánh giá mức độ ghi nhớ theo thang Spaced Repetition.
+   - Ghép đôi nối từ 2 cột cân đối, phản hồi xúc giác (tactile feedback) và âm thanh chuẩn xác.
 
 ---
 
-## 4. Đánh giá chất lượng và kết luận
-- Ứng dụng đáp ứng toàn diện và vượt chuẩn các yêu cầu trong Master Prompt:
-  1. Dữ liệu chuẩn xác 100% theo Thông tư 99/2025/TT-BTC (184 tài khoản, 8 nhóm, phân cấp đa tầng từ cấp 1 đến cấp 4).
-  2. Giao diện thiết kế theo chuẩn Apple Human Interface Guidelines (tối giản, tinh tế, font hệ thống SF Pro, chế độ Sáng / Tối mượt mà).
-  3. Hoạt động offline hoàn toàn với IndexedDB, không cần đăng nhập hay backend phức tạp.
-  4. Đã sẵn sàng đưa vào sử dụng ngay lập tức.
+## 2. Bảng đối chiếu giao diện Trước & Sau Redesign (Before / After Evidence)
+
+| Màn hình | Ảnh Trước Nâng Cấp (Before) | Ảnh Sau Nâng Cấp (After - Apple Quality) | Đánh giá & Cải tiến |
+|:---|:---:|:---:|:---|
+| **Dashboard (Light Mode)** | [dashboard-light.png](file:///d:/Antigravity/Ôn%20bảng%20tài%20khoản%20kế%20toán/test-results/ui-before/dashboard-light.png) | [dashboard-light.png](file:///d:/Antigravity/Ôn%20bảng%20tài%20khoản%20kế%20toán/test-results/ui-after/dashboard-light.png) | Loại bỏ hộp đen thô; card phẳng sang trọng, thoáng đãng, phân cấp chuẩn Apple |
+| **Dashboard (Dark Mode)** | [dashboard-dark.png](file:///d:/Antigravity/Ôn%20bảng%20tài%20khoản%20kế%20toán/test-results/ui-before/dashboard-dark.png) | [dashboard-dark.png](file:///d:/Antigravity/Ôn%20bảng%20tài%20khoản%20kế%20toán/test-results/ui-after/dashboard-dark.png) | Nền đen sâu (OLED friendly), các card `#1c1c1e` tách lớp rõ ràng, tương phản êm dịu |
+| **Danh mục tài khoản (Catalog)** | [catalog.png](file:///d:/Antigravity/Ôn%20bảng%20tài%20khoản%20kế%20toán/test-results/ui-before/catalog.png) | [catalog.png](file:///d:/Antigravity/Ôn%20bảng%20tài%20khoản%20kế%20toán/test-results/ui-after/catalog.png) | Ô tìm kiếm bo góc Apple, cây phân cấp có đường kẻ gióng mờ tinh tế, mã TK tabular |
+| **Flashcard 3D** | [flashcard.png](file:///d:/Antigravity/Ôn%20bảng%20tài%20khoản%20kế%20toán/test-results/ui-before/flashcard.png) | [flashcard.png](file:///d:/Antigravity/Ôn%20bảng%20tài%20khoản%20kế%20toán/test-results/ui-after/flashcard.png) | Thẻ học bo góc chuẩn Apple, các nút đánh giá pastel dịu mắt, hỗ trợ phím tắt 1-4 |
+| **Trắc nghiệm (Quiz)** | [quiz.png](file:///d:/Antigravity/Ôn%20bảng%20tài%20khoản%20kế%20toán/test-results/ui-before/quiz.png) | [quiz.png](file:///d:/Antigravity/Ôn%20bảng%20tài%20khoản%20kế%20toán/test-results/ui-after/quiz.png) | Cố định 100% vị trí (0px shift), huy hiệu 1-2-3-4 nổi bật, thanh giải thích tĩnh tại |
+| **Ghép đôi (Matching)** | [matching.png](file:///d:/Antigravity/Ôn%20bảng%20tài%20khoản%20kế%20toán/test-results/ui-before/matching.png) | [matching.png](file:///d:/Antigravity/Ôn%20bảng%20tài%20khoản%20kế%20toán/test-results/ui-after/matching.png) | 2 cột thẻ cân đối, hiệu ứng bấm nảy xúc giác (Apple press), thanh đếm thời gian sắc nét |
+
+---
+
+## 3. Kết quả kiểm thử chức năng & độ phản hồi (Responsiveness)
+
+- **Độ dịch chuyển ô khi làm trắc nghiệm**: `opt1_deltaY: 0px`, `opt2_deltaY: 0px`, `opt3_deltaY: 0px`, `opt4_deltaY: 0px`, `nextBtn_deltaY: 0px`. Hoàn toàn không rung lắc khi chọn đáp án.
+- **Phím tắt điều hướng**: Phím Mũi tên trái (←) và Mũi tên phải (→) hoạt động tức thì giữa các câu hỏi.
+- **Desktop (1280x800 & 1920x1080)**: Bố cục lưới thông thoáng, Sidebar cố định với logo Kuromi và tên thương hiệu "For Bunny".
+- **Tablet (768x1024)**: Bố cục thích ứng linh hoạt, không vỡ layout.
+- **Mobile (375x812)**: Thanh điều hướng chuyển sang dạng Bottom Navigation bar tiện dụng, không tràn ngang (`htmlWidth = 369px`).
+- **Lỗi hiển thị & Console**: Đã khắc phục mã SVG path bị lỗi ở icon con mắt, 0 lỗi runtime phát sinh.

@@ -67,7 +67,7 @@ export function SmartReview({
     // Hero Banner
     React.createElement('div', {
       key: 'hero-card',
-      className: 'relative overflow-hidden p-6 md:p-8 rounded-3xl bg-gradient-to-br from-neutral-900 via-neutral-900 to-neutral-800 text-white shadow-xl'
+      className: 'relative overflow-hidden p-6 md:p-8 rounded-3xl bg-neutral-900 text-white dark:bg-[#1c1c1e] dark:border dark:border-white/[0.08] shadow-md'
     }, [
       React.createElement('div', { key: 'content', className: 'relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6' }, [
         React.createElement('div', { key: 'text', className: 'space-y-2' }, [
@@ -75,16 +75,16 @@ export function SmartReview({
             React.createElement(Icons.Flame, { key: 'ic', size: 14 }),
             'Thuật toán Spaced Repetition (Lặp lại ngắt quãng)'
           ]),
-          React.createElement('h2', { key: 'title', className: 'text-2xl md:text-3xl font-extrabold tracking-tight' }, 'Ôn tập Thông minh'),
-          React.createElement('p', { key: 'sub', className: 'text-sm text-neutral-300 max-w-xl' },
-            'Hệ thống tự động theo dõi đường cong lãng quên của não bộ: nhắc lại các tài khoản khó nhớ thường xuyên hơn và giãn cách tối đa các tài khoản đã nhớ vững.'
+          React.createElement('h2', { key: 'title', className: 'text-2xl md:text-3xl font-bold tracking-tight' }, 'Ôn tập Thông minh'),
+          React.createElement('p', { key: 'sub', className: 'text-sm text-neutral-300 dark:text-neutral-400 max-w-xl leading-relaxed' },
+            'Hệ thống tự động theo dõi đường cong lãng quên: ưu tiên nhắc lại các tài khoản khó nhớ và giãn cách tối đa các tài khoản bạn đã nắm vững.'
           )
         ]),
 
         React.createElement('button', {
           key: 'start-btn',
           onClick: handleStartReview,
-          className: 'px-6 py-4 rounded-2xl bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold text-sm md:text-base shadow-lg shadow-amber-500/30 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shrink-0'
+          className: 'px-6 py-4 rounded-2xl bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold text-sm md:text-base shadow-sm active:scale-[0.98] transition-all flex items-center justify-center gap-2 shrink-0 apple-btn-press'
         }, [
           React.createElement(Icons.Play, { key: 'play', size: 18 }),
           `ÔN TẬP NGAY (${activeReviewQueue.length} TÀI KHOẢN)`
@@ -104,7 +104,7 @@ export function SmartReview({
       {
         label: 'Đang học',
         count: learningList.length,
-        sub: 'Đang ghi nhớ',
+        sub: 'Đang củng cố',
         color: 'text-blue-600 dark:text-blue-400',
         bg: 'bg-blue-50 dark:bg-blue-950/40'
       },
@@ -124,21 +124,21 @@ export function SmartReview({
       }
     ].map((st, idx) => React.createElement('div', {
       key: 'st-' + idx,
-      className: 'p-5 rounded-3xl bg-white dark:bg-[#1c1c1e] border border-neutral-200/70 dark:border-neutral-800 shadow-sm space-y-2'
+      className: 'apple-card p-5 space-y-2'
     }, [
       React.createElement('div', { key: 'top', className: 'text-xs font-semibold text-neutral-500 dark:text-neutral-400' }, st.label),
-      React.createElement('div', { key: 'cnt', className: `text-3xl font-extrabold ${st.color}` }, st.count),
+      React.createElement('div', { key: 'cnt', className: `text-3xl font-extrabold ${st.color} font-tabular` }, st.count),
       React.createElement('div', { key: 'sub', className: 'text-xs text-neutral-400' }, st.sub)
     ]))),
 
     // Active Review Queue Table
     React.createElement('div', {
       key: 'queue-section',
-      className: 'bg-white dark:bg-[#1c1c1e] rounded-3xl border border-neutral-200/70 dark:border-neutral-800 shadow-sm overflow-hidden divide-y divide-neutral-100 dark:divide-neutral-800'
+      className: 'apple-card overflow-hidden divide-y divide-black/[0.04] dark:divide-white/[0.05]'
     }, [
       React.createElement('div', {
         key: 'q-hdr',
-        className: 'p-5 bg-neutral-50/70 dark:bg-neutral-800/40 flex items-center justify-between'
+        className: 'p-5 bg-neutral-50/70 dark:bg-neutral-800/30 flex items-center justify-between border-b border-black/[0.04] dark:border-white/[0.05]'
       }, [
         React.createElement('div', { key: 'left' }, [
           React.createElement('h3', { className: 'text-sm font-bold text-neutral-800 dark:text-neutral-200' }, 'Hàng đợi ôn tập ưu tiên'),
@@ -147,11 +147,11 @@ export function SmartReview({
         React.createElement('button', {
           key: 'start-mini',
           onClick: handleStartReview,
-          className: 'px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs transition-colors'
+          className: 'px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs transition-colors apple-btn-press'
         }, 'Bắt đầu lượt này')
       ]),
 
-      React.createElement('div', { key: 'q-rows', className: 'divide-y divide-neutral-100 dark:divide-neutral-800' },
+      React.createElement('div', { key: 'q-rows', className: 'divide-y divide-black/[0.04] dark:divide-white/[0.05]' },
         activeReviewQueue.slice(0, 15).map(acc => {
           const prog = progress[acc.code] || { state: 0, wrong_count: 0, interval_days: 0 };
           return React.createElement('div', {
@@ -160,12 +160,12 @@ export function SmartReview({
               sound.playClick();
               onSelectAccount(acc);
             },
-            className: 'p-4 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 flex items-center justify-between cursor-pointer transition-colors group'
+            className: 'p-4 hover:bg-black/[0.02] dark:hover:bg-white/[0.04] flex items-center justify-between cursor-pointer transition-colors group'
           }, [
             React.createElement('div', { key: 'left', className: 'flex items-center gap-3' }, [
               React.createElement('span', {
                 key: 'code',
-                className: 'font-mono font-bold text-sm px-2.5 py-1 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-blue-600 dark:text-blue-400 border border-neutral-200/50 dark:border-neutral-700/50 group-hover:bg-blue-600 group-hover:text-white transition-colors'
+                className: 'font-mono font-bold text-sm px-2.5 py-1 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-blue-600 dark:text-blue-400 border border-black/[0.04] dark:border-white/[0.06] group-hover:bg-blue-600 group-hover:text-white transition-colors font-tabular'
               }, acc.code),
               React.createElement('div', { key: 'name-wrap' }, [
                 React.createElement('div', { key: 'name', className: 'text-sm font-semibold text-neutral-800 dark:text-neutral-200' }, acc.name),
@@ -176,13 +176,13 @@ export function SmartReview({
             React.createElement('div', { key: 'right', className: 'flex items-center gap-3' }, [
               prog.wrong_count > 0 && React.createElement('span', {
                 key: 'wrong-tag',
-                className: 'text-xs text-red-500 font-semibold bg-red-50 dark:bg-red-950/40 px-2 py-0.5 rounded-md'
+                className: 'text-xs text-red-600 dark:text-red-400 font-semibold bg-red-50 dark:bg-red-950/40 px-2 py-0.5 rounded-md border border-red-200/40 dark:border-red-900/40'
               }, `Đã sai ${prog.wrong_count} lần`),
               React.createElement('span', {
                 key: 'int-tag',
                 className: 'text-xs text-neutral-400 font-medium'
               }, prog.interval_days ? `Giãn cách: ${prog.interval_days} ngày` : 'Mới'),
-              React.createElement(Icons.ChevronRight, { key: 'arr', size: 16, className: 'text-neutral-300 group-hover:text-neutral-600' })
+              React.createElement(Icons.ChevronRight, { key: 'arr', size: 16, className: 'text-neutral-300 dark:text-neutral-600 group-hover:text-neutral-600 dark:group-hover:text-neutral-300 transition-colors' })
             ])
           ]);
         })

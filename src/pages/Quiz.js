@@ -97,7 +97,6 @@ export function Quiz({
       sound.playClick();
       setCurrentIndex(prev => prev + 1);
     } else if (Object.keys(answersMap).length >= preparedQuiz.length) {
-      // Completed all questions
       sound.playComplete();
       setIsFinished(true);
       if (onCompleteSession) {
@@ -111,7 +110,6 @@ export function Quiz({
         });
       }
     } else if (isAnswered) {
-      // Finished
       sound.playComplete();
       setIsFinished(true);
       if (onCompleteSession) {
@@ -160,11 +158,7 @@ export function Quiz({
     }
   };
 
-  // Keyboard navigation:
-  // - ArrowLeft: Previous question
-  // - ArrowRight: Next question
-  // - 1, 2, 3, 4: Pick options
-  // - Enter: Next / Complete
+  // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (isFinished) return;
@@ -197,7 +191,7 @@ export function Quiz({
       React.createElement('div', { className: 'text-base font-semibold text-neutral-600 dark:text-neutral-400' }, 'Không có câu hỏi nào trong đề thi này.'),
       React.createElement('button', {
         onClick: onBackToDashboard,
-        className: 'px-5 py-2.5 rounded-xl bg-blue-600 text-white font-semibold text-sm'
+        className: 'px-5 py-2.5 rounded-xl bg-blue-600 text-white font-semibold text-sm apple-btn-press'
       }, 'Quay về trang chủ')
     ]);
   }
@@ -212,41 +206,41 @@ export function Quiz({
 
     return React.createElement('div', { className: 'max-w-2xl mx-auto space-y-6 animate-fade-in p-6' }, [
       React.createElement('div', {
-        className: 'p-8 rounded-3xl bg-white dark:bg-[#1c1c1e] border border-neutral-200/80 dark:border-neutral-800 shadow-xl space-y-6 text-center'
+        className: 'apple-card p-8 space-y-6 text-center'
       }, [
-        React.createElement('div', { className: 'w-16 h-16 rounded-full bg-blue-100 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center mx-auto shadow-inner' },
+        React.createElement('div', { className: 'w-16 h-16 rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center mx-auto border border-blue-200/50 dark:border-blue-800/40' },
           React.createElement(Icons.Trophy, { size: 32 })
         ),
         React.createElement('div', { className: 'space-y-1' }, [
-          React.createElement('h3', { className: 'text-2xl font-extrabold text-neutral-900 dark:text-neutral-100' }, 'Hoàn thành bài Trắc nghiệm!'),
+          React.createElement('h3', { className: 'text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100' }, 'Hoàn thành bài Trắc nghiệm!'),
           React.createElement('p', { className: 'text-sm text-neutral-500' }, `Bạn đã hoàn tất ${total} câu hỏi trắc nghiệm.`)
         ]),
 
-        React.createElement('div', { className: 'p-6 rounded-2xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-700/60 grid grid-cols-3 gap-4' }, [
+        React.createElement('div', { className: 'p-5 rounded-2xl bg-neutral-50 dark:bg-neutral-800/50 border border-black/[0.04] dark:border-white/[0.06] grid grid-cols-3 gap-4' }, [
           React.createElement('div', { key: 'q-sc' }, [
-            React.createElement('div', { className: 'text-xs text-neutral-500 mb-1' }, 'Điểm số'),
-            React.createElement('div', { className: 'text-3xl font-extrabold text-blue-600 dark:text-blue-400' }, `${scorePct}%`)
+            React.createElement('div', { className: 'text-xs text-neutral-500 mb-1 font-medium' }, 'Điểm số'),
+            React.createElement('div', { className: 'text-3xl font-extrabold text-blue-600 dark:text-blue-400 font-tabular' }, `${scorePct}%`)
           ]),
           React.createElement('div', { key: 'q-cor' }, [
-            React.createElement('div', { className: 'text-xs text-neutral-500 mb-1' }, 'Số câu đúng'),
-            React.createElement('div', { className: 'text-3xl font-extrabold text-emerald-600 dark:text-emerald-400' }, `${correctCount}/${total}`)
+            React.createElement('div', { className: 'text-xs text-neutral-500 mb-1 font-medium' }, 'Số câu đúng'),
+            React.createElement('div', { className: 'text-3xl font-extrabold text-emerald-600 dark:text-emerald-400 font-tabular' }, `${correctCount}/${total}`)
           ]),
           React.createElement('div', { key: 'q-wrong' }, [
-            React.createElement('div', { className: 'text-xs text-neutral-500 mb-1' }, 'Số câu sai'),
-            React.createElement('div', { className: 'text-3xl font-extrabold text-red-500' }, failedItems.length)
+            React.createElement('div', { className: 'text-xs text-neutral-500 mb-1 font-medium' }, 'Số câu sai'),
+            React.createElement('div', { className: 'text-3xl font-extrabold text-red-500 font-tabular' }, failedItems.length)
           ])
         ]),
 
         // Review Failed Questions
         failedItems.length > 0 && React.createElement('div', { className: 'space-y-3 text-left pt-2' }, [
-          React.createElement('div', { className: 'text-xs font-bold text-neutral-400 uppercase tracking-wider' }, `Các câu cần lưu ý (${failedItems.length}):`),
+          React.createElement('div', { className: 'text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider' }, `Các câu cần lưu ý (${failedItems.length}):`),
           React.createElement('div', { className: 'max-h-60 overflow-y-auto space-y-2 pr-1' },
             failedItems.map((item, idx) => React.createElement('div', {
               key: idx,
               className: 'p-3 rounded-2xl bg-red-50/60 dark:bg-red-950/20 border border-red-200/50 dark:border-red-900/30 text-xs space-y-1'
             }, [
-              React.createElement('div', { key: 'q-name', className: 'font-bold text-neutral-800 dark:text-neutral-200 flex items-center gap-2' }, [
-                React.createElement('span', { key: 'code', className: 'font-mono px-2 py-0.5 rounded bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300' }, item.account.code),
+              React.createElement('div', { key: 'q-name', className: 'font-semibold text-neutral-800 dark:text-neutral-200 flex items-center gap-2' }, [
+                React.createElement('span', { key: 'code', className: 'font-mono px-2 py-0.5 rounded bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300 font-tabular' }, item.account.code),
                 item.account.name
               ]),
               React.createElement('div', { key: 'sol', className: 'text-neutral-600 dark:text-neutral-400' }, [
@@ -263,7 +257,7 @@ export function Quiz({
           failedItems.length > 0 && React.createElement('button', {
             key: 'retry-btn',
             onClick: handleRetryFailed,
-            className: 'flex-1 py-3 px-4 rounded-2xl bg-amber-600 hover:bg-amber-500 text-white font-semibold text-sm transition-all flex items-center justify-center gap-2'
+            className: 'flex-1 py-3 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-neutral-950 font-semibold text-sm transition-all flex items-center justify-center gap-2 apple-btn-press'
           }, [
             React.createElement(Icons.RotateCcw, { size: 16 }),
             `Luyện lại ${failedItems.length} câu làm sai`
@@ -271,7 +265,7 @@ export function Quiz({
           React.createElement('button', {
             key: 'home-btn',
             onClick: onBackToDashboard,
-            className: 'flex-1 py-3 px-4 rounded-2xl bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 font-semibold text-sm transition-all'
+            className: 'flex-1 py-3 px-4 rounded-xl bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 font-semibold text-sm transition-all apple-btn-press'
           }, 'Về Trang chủ')
         ])
       ])
@@ -287,18 +281,18 @@ export function Quiz({
       React.createElement('button', {
         key: 'back',
         onClick: onBackToDashboard,
-        className: 'flex items-center gap-1.5 text-xs font-semibold text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 p-2 rounded-xl hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors'
+        className: 'flex items-center gap-1.5 text-xs font-medium text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 p-2 rounded-xl hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors apple-btn-press'
       }, [
         React.createElement(Icons.ArrowLeft, { size: 16 }),
         'Dừng'
       ]),
 
       React.createElement('div', { key: 'progress-box', className: 'flex-1 max-w-xs space-y-1 text-center' }, [
-        React.createElement('div', { className: 'flex items-center justify-between text-xs font-semibold text-neutral-500 dark:text-neutral-400' }, [
+        React.createElement('div', { className: 'flex items-center justify-between text-xs font-medium text-neutral-500 dark:text-neutral-400 font-tabular' }, [
           React.createElement('span', { key: 'cur' }, `Câu ${currentIndex + 1} / ${preparedQuiz.length}`),
-          React.createElement('span', { key: 'ans', className: 'text-neutral-400 font-normal' }, `Đã trả lời: ${answeredCount}/${preparedQuiz.length}`)
+          React.createElement('span', { key: 'ans', className: 'text-neutral-400 dark:text-neutral-500' }, `Đã trả lời: ${answeredCount}/${preparedQuiz.length}`)
         ]),
-        React.createElement('div', { className: 'w-full h-1.5 rounded-full bg-neutral-200 dark:bg-neutral-700 overflow-hidden' },
+        React.createElement('div', { className: 'w-full h-1.5 rounded-full bg-neutral-200/80 dark:bg-neutral-800 overflow-hidden' },
           React.createElement('div', {
             className: 'h-full bg-blue-600 rounded-full transition-all duration-300',
             style: { width: `${progressPct}%` }
@@ -308,36 +302,36 @@ export function Quiz({
 
       streak > 1 ? React.createElement('div', {
         key: 'streak',
-        className: 'flex items-center gap-1 text-xs font-bold text-amber-500 bg-amber-50 dark:bg-amber-950/40 px-2.5 py-1 rounded-full shrink-0'
+        className: 'flex items-center gap-1 text-xs font-semibold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 px-2.5 py-1 rounded-full shrink-0 border border-amber-200/40 dark:border-amber-800/40 font-tabular'
       }, [
         React.createElement(Icons.Flame, { size: 14 }),
-        `${streak} đúng`
+        `${streak} đúng liên tiếp`
       ]) : React.createElement('div', { key: 'sp', className: 'w-14' })
     ]),
 
     // Question Card
     React.createElement('div', {
       key: 'q-card',
-      className: 'p-6 md:p-8 rounded-3xl bg-white dark:bg-[#1c1c1e] border border-neutral-200/80 dark:border-neutral-800 shadow-sm space-y-3 text-center'
+      className: 'apple-card p-6 md:p-8 space-y-3 text-center'
     }, [
-      React.createElement('div', { key: 'badge', className: 'inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400' },
+      React.createElement('div', { key: 'badge', className: 'inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border border-black/[0.04] dark:border-white/[0.06]' },
         `Cấp ${currentQ.account.level} • Nhóm ${currentQ.account.group}`
       ),
 
       React.createElement('div', { key: 'q-title', className: 'space-y-1.5' }, [
-        React.createElement('div', { key: 'sub', className: 'text-xs font-semibold text-neutral-400 uppercase tracking-widest' },
+        React.createElement('div', { key: 'sub', className: 'text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest' },
           currentQ.isCodeToName ? 'MÃ TÀI KHOẢN SAU ĐÂY CÓ TÊN LÀ GÌ?' : 'TÀI KHOẢN SAU ĐÂY CÓ SỐ HIỆU LÀ GÌ?'
         ),
         React.createElement('div', {
           key: 'main',
-          className: `font-extrabold tracking-tight text-neutral-900 dark:text-neutral-100 ${
-            currentQ.isCodeToName ? 'font-mono text-5xl md:text-6xl text-blue-600 dark:text-blue-400' : 'text-2xl md:text-3xl'
+          className: `font-bold tracking-tight text-neutral-900 dark:text-neutral-100 ${
+            currentQ.isCodeToName ? 'font-mono text-5xl md:text-6xl text-blue-600 dark:text-blue-400 font-tabular' : 'text-2xl md:text-3xl'
           }`
         }, currentQ.isCodeToName ? currentQ.account.code : currentQ.account.name)
       ])
     ]),
 
-    // 4 Options Grid (ABSOLUTELY FIXED LAYOUT - 0px MOVEMENT)
+    // 4 Options Grid (ABSOLUTELY FIXED LAYOUT - 0px MOVEMENT GUARANTEED)
     // - Every button has fixed height h-[64px], fixed border-2
     // - Font weight is always font-semibold
     // - Fixed 24px icon slot reserved at all times on the right
@@ -347,8 +341,8 @@ export function Quiz({
         const optionNumber = idx + 1;
         const isSelected = currentAnswer?.selectedOption?.text === opt.text;
 
-        let containerClass = 'bg-white dark:bg-[#1c1c1e] border-neutral-200/80 dark:border-neutral-800 text-neutral-800 dark:text-neutral-200 hover:border-neutral-300 dark:hover:border-neutral-700';
-        let keyPillClass = 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500';
+        let containerClass = 'bg-white dark:bg-[#1c1c1e] border-neutral-200/80 dark:border-neutral-800 text-neutral-800 dark:text-neutral-200 hover:border-neutral-300 dark:hover:border-neutral-700 shadow-sm';
+        let keyPillClass = 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400';
         let iconContent = null;
 
         if (isAnswered) {
@@ -377,11 +371,11 @@ export function Quiz({
           React.createElement('div', { key: 'left-block', className: 'flex items-center gap-3 min-w-0 pr-2' }, [
             React.createElement('span', {
               key: 'num-badge',
-              className: `w-7 h-7 rounded-lg text-xs font-bold flex items-center justify-center shrink-0 ${keyPillClass}`
+              className: `w-7 h-7 rounded-lg text-xs font-bold flex items-center justify-center shrink-0 ${keyPillClass} font-tabular`
             }, optionNumber),
             React.createElement('span', {
               key: 'txt',
-              className: `text-sm font-semibold leading-snug truncate ${!currentQ.isCodeToName ? 'font-mono text-base text-blue-600 dark:text-blue-400' : ''}`
+              className: `text-sm font-semibold leading-snug truncate ${!currentQ.isCodeToName ? 'font-mono text-base text-blue-600 dark:text-blue-400 font-tabular' : ''}`
             }, opt.text)
           ]),
 
@@ -403,7 +397,7 @@ export function Quiz({
           disabled: currentIndex === 0,
           onClick: handlePrev,
           title: 'Phím Mũi tên trái (←)',
-          className: `px-4 py-3 rounded-2xl border-2 text-xs font-bold flex items-center gap-2 transition-all ${
+          className: `px-4 py-3 rounded-2xl border-2 text-xs font-semibold flex items-center gap-2 transition-all apple-btn-press ${
             currentIndex === 0
               ? 'opacity-40 cursor-not-allowed border-neutral-200 dark:border-neutral-800 text-neutral-400'
               : 'hover:bg-neutral-100 dark:hover:bg-neutral-800 border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300'
@@ -417,7 +411,7 @@ export function Quiz({
           key: 'btn-next',
           onClick: handleNext,
           title: 'Phím Mũi tên phải (→) hoặc Enter',
-          className: `flex-1 py-3 px-5 rounded-2xl border-2 font-bold text-xs md:text-sm shadow-sm flex items-center justify-center gap-2 transition-all ${
+          className: `flex-1 py-3 px-5 rounded-2xl border-2 font-semibold text-xs md:text-sm shadow-sm flex items-center justify-center gap-2 transition-all apple-btn-press ${
             isAnswered
               ? 'bg-blue-600 hover:bg-blue-700 text-white border-blue-600 shadow-blue-600/30'
               : 'bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 border-transparent'
@@ -440,7 +434,7 @@ export function Quiz({
             : 'bg-neutral-50/50 dark:bg-neutral-900/30 border-dashed border-neutral-200/50 dark:border-neutral-800 text-neutral-400'
         }`
       }, isAnswered ? [
-        React.createElement('div', { key: 'top', className: 'flex items-center justify-between text-xs font-bold text-neutral-600 dark:text-neutral-300 mb-1' }, [
+        React.createElement('div', { key: 'top', className: 'flex items-center justify-between text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1' }, [
           React.createElement('span', { key: 'acc' }, `TÀI KHOẢN: ${currentQ.account.code} - ${currentQ.account.name}`),
           React.createElement('span', { key: 'nat', className: 'font-normal px-2 py-0.5 rounded bg-neutral-200/60 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300' }, currentQ.account.nature)
         ]),

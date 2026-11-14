@@ -23,7 +23,7 @@ export function Settings({
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `TK_Study_Backup_${new Date().toISOString().split('T')[0]}.json`;
+      a.download = `For_Bunny_Backup_${new Date().toISOString().split('T')[0]}.json`;
       a.click();
       URL.revokeObjectURL(url);
     } catch (err) {
