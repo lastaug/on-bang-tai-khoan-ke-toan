@@ -189,7 +189,7 @@ export function Settings({
       key: 'info-sec',
       className: 'p-6 rounded-3xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200/60 dark:border-neutral-800 space-y-3 text-xs text-neutral-500'
     }, [
-      React.createElement('div', { className: 'font-bold text-neutral-800 dark:text-neutral-200 text-sm' }, 'Về ứng dụng Bunny Stupid'),
+      React.createElement('div', { className: 'font-bold text-neutral-800 dark:text-neutral-200 text-sm' }, 'Về ứng dụng For Bunny'),
       React.createElement('div', { className: 'space-y-1 leading-relaxed' }, [
         React.createElement('div', {}, '• Căn cứ pháp lý: Thông tư số 99/2025/TT-BTC ngày 27/10/2025 của Bộ trưởng Bộ Tài chính.'),
         React.createElement('div', {}, '• Toàn bộ 184 tài khoản kế toán cấp 1, cấp 2, cấp 3 và cấp 4 được phân cấp chính xác theo văn bản gốc.'),

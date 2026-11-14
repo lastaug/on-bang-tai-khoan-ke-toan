@@ -64,7 +64,7 @@ export function Navbar({
         React.createElement('h1', {
           key: 'page-title',
           className: 'text-lg md:text-xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100'
-        }, viewTitles[currentView] || 'Bunny Stupid'),
+        }, viewTitles[currentView] || 'For Bunny'),
         React.createElement('span', {
           key: 'sub-badge',
           className: 'hidden sm:inline-block text-xs font-medium text-neutral-500 dark:text-neutral-400 bg-neutral-100 dark:bg-neutral-800/80 px-2 py-0.5 rounded-md border border-neutral-200/50 dark:border-neutral-700/50'
