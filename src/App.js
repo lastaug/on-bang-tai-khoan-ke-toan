@@ -27,8 +27,8 @@ export function App() {
   const [viewParams, setViewParams] = useState({});
   const [theme, setTheme] = useState('light');
   const [soundEnabled, setSoundEnabled] = useState(true);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => localStorage.getItem('tk_sidebar_collapsed') === 'true');
-  const [isFocusMode, setIsFocusMode] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isHeaderHidden, setIsHeaderHidden] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Data states
@@ -83,17 +83,19 @@ export function App() {
 
   useEffect(() => {
     loadDatabase();
+    // Reset any stale collapsed state to ensure sidebar is always visible
+    localStorage.removeItem('tk_sidebar_collapsed');
   }, [loadDatabase]);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.key === 'Escape' && isFocusMode) {
-        setIsFocusMode(false);
+      if (e.key === 'Escape' && isHeaderHidden) {
+        setIsHeaderHidden(false);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isFocusMode]);
+  }, [isHeaderHidden]);
 
   // Theme switcher
   const handleToggleTheme = () => {
@@ -306,12 +308,8 @@ export function App() {
       key: 'sidebar',
       currentView,
       setView,
-      isCollapsed: isFocusMode || isSidebarCollapsed,
-      toggleCollapse: () => setIsSidebarCollapsed(prev => {
-        const next = !prev;
-        localStorage.setItem('tk_sidebar_collapsed', String(next));
-        return next;
-      }),
+      isCollapsed: isSidebarCollapsed,
+      toggleCollapse: () => setIsSidebarCollapsed(prev => !prev),
       stats: globalStats
     }),
 
@@ -319,7 +317,7 @@ export function App() {
     React.createElement('div', {
       key: 'main-wrapper',
       className: `flex-1 flex flex-col transition-all duration-300 ease-in-out ${
-        isFocusMode || isSidebarCollapsed ? 'md:pl-0' : 'md:pl-64'
+        isSidebarCollapsed ? 'md:pl-20' : 'md:pl-64'
       }`
     }, [
       // Glass Header
@@ -336,10 +334,8 @@ export function App() {
           setIsSearchOpen(true);
         },
         isSidebarCollapsed,
-        isFocusMode,
-        onToggleFocusMode: () => {
-          setIsFocusMode(prev => !prev);
-        },
+        isHeaderHidden,
+        onToggleHeader: () => setIsHeaderHidden(prev => !prev),
         onToggleMobileMenu: () => setIsMobileMenuOpen(prev => !prev)
       }),
 
@@ -450,7 +446,7 @@ export function App() {
     ]),
 
     // Mobile Bottom Navigation Bar
-    !isFocusMode && React.createElement(MobileNav, {
+    !isHeaderHidden && React.createElement(MobileNav, {
       key: 'mobile-nav',
       currentView,
       setView
@@ -563,15 +559,15 @@ export function App() {
       ])
     ]),
 
-    // Floating circular button to restore header & navigation when in focus mode
-    isFocusMode && React.createElement('button', {
+    // Floating circular button to restore header when header is hidden
+    isHeaderHidden && React.createElement('button', {
       key: 'floating-focus-btn',
       onClick: () => {
         sound.playClick();
-        setIsFocusMode(false);
+        setIsHeaderHidden(false);
       },
-      title: 'Hiện lại thanh công cụ & điều hướng',
-      'aria-label': 'Hiện lại thanh công cụ & điều hướng',
+      title: 'Hiện lại thanh tiêu đề trên cùng',
+      'aria-label': 'Hiện lại thanh tiêu đề trên cùng',
       className: 'fixed top-3 right-4 md:right-8 z-50 w-9 h-9 md:w-10 md:h-10 rounded-full bg-white/90 dark:bg-[#1c1c1e]/90 hover:bg-neutral-100 dark:hover:bg-neutral-800 backdrop-blur-xl border border-neutral-200/80 dark:border-neutral-700/80 text-neutral-700 dark:text-neutral-200 shadow-lg flex items-center justify-center transition-all duration-200 active:scale-95 animate-fade-in'
     }, React.createElement(Icons.Menu, { size: 19 }))
   ]);
