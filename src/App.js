@@ -4,8 +4,8 @@ import { ACCOUNTS_DATA } from './data/accountsData.js';
 import { db } from './services/db.js';
 import { sound } from './services/audio.js';
 import { Icons } from './components/Icons.js';
-import { Sidebar } from './components/Sidebar.js';
-import { Navbar } from './components/Navbar.js';
+import { Sidebar } from './components/Sidebar.js?v=20261114_01';
+import { Navbar } from './components/Navbar.js?v=20261114_01';
 import { MobileNav } from './components/MobileNav.js';
 import { AccountDetailModal } from './components/AccountDetailModal.js';
 
