@@ -1,4 +1,4 @@
-// IndexedDB & Local Storage Service for TK Study
+// IndexedDB & Local Storage Service for Bunny Stupid
 
 const DB_NAME = 'TKStudyDB';
 const DB_VERSION = 1;
@@ -374,7 +374,7 @@ class DatabaseService {
     return {
       version: 1,
       exported_at: new Date().toISOString(),
-      app: 'TK Study',
+      app: 'Bunny Stupid',
       data: {
         progress,
         decks,

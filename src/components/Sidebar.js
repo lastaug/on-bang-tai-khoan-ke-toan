@@ -61,7 +61,7 @@ export function Sidebar({ currentView, setView, isOpen = true, toggleCollapse, s
         ]),
         React.createElement('div', { key: 'brand-text', className: 'overflow-hidden' }, [
           React.createElement('div', { key: 'app-name', className: 'font-semibold tracking-tight text-neutral-900 dark:text-neutral-100 flex items-center gap-1.5' }, [
-            'TK Study',
+            'Bunny Stupid',
             React.createElement('span', { key: 'v-tag', className: 'text-[10px] uppercase font-bold px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300' }, 'TT99')
           ]),
           React.createElement('div', { key: 'app-sub', className: 'text-xs text-neutral-500 dark:text-neutral-400 truncate' }, 'Hệ thống TK kế toán')

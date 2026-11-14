@@ -467,7 +467,7 @@ export function App() {
             React.createElement('div', { className: 'w-8 h-8 rounded-lg overflow-hidden border border-pink-200 dark:border-pink-900/60 shadow-sm shrink-0 bg-pink-50' }, [
               React.createElement('img', { src: './src/assets/kuromi.png', alt: 'Kuromi', className: 'w-full h-full object-cover' })
             ]),
-            React.createElement('span', { className: 'font-bold text-base' }, 'TK Study')
+            React.createElement('span', { className: 'font-bold text-base' }, 'Bunny Stupid')
           ]),
           React.createElement('button', {
             onClick: () => setIsMobileMenuOpen(false),
