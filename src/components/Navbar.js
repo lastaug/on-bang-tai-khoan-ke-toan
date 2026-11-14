@@ -40,6 +40,11 @@ export function Navbar({
     sound.playClick();
   };
 
+  const handleFocusClick = () => {
+    sound.playClick();
+    if (onToggleNav) onToggleNav();
+  };
+
   return React.createElement('header', {
     className: `sticky top-0 z-20 transition-all duration-300 ease-in-out glass-header border-neutral-200/70 dark:border-neutral-800/80 px-4 md:px-8 flex items-center justify-between ${
       !isNavVisible
@@ -73,12 +78,12 @@ export function Navbar({
     ]),
 
     // Right: Global actions
-    React.createElement('div', { key: 'right', className: 'flex items-center gap-2 md:gap-3' }, [
+    React.createElement('div', { key: 'right', className: 'flex items-center gap-1.5 md:gap-2' }, [
       // Search Trigger Button
       React.createElement('button', {
         key: 'search-btn',
         onClick: onOpenSearch,
-        className: 'flex items-center gap-2 px-3 py-1.5 rounded-xl bg-neutral-100 dark:bg-neutral-800/80 hover:bg-neutral-200/70 dark:hover:bg-neutral-700/60 border border-neutral-200/60 dark:border-neutral-700/50 text-neutral-600 dark:text-neutral-300 text-xs md:text-sm font-medium transition-colors'
+        className: 'flex items-center gap-2 px-3 py-1.5 rounded-xl bg-neutral-100 dark:bg-neutral-800/80 hover:bg-neutral-200/70 dark:hover:bg-neutral-700/60 border border-black/[0.06] dark:border-white/[0.08] text-neutral-600 dark:text-neutral-300 text-xs md:text-sm font-medium transition-colors apple-btn-press'
       }, [
         React.createElement(Icons.Search, { key: 's-icon', size: 15, className: 'text-neutral-400' }),
         React.createElement('span', { key: 's-txt', className: 'hidden sm:inline' }, 'Tìm tài khoản...'),
@@ -93,7 +98,7 @@ export function Navbar({
         key: 'sound-btn',
         onClick: handleSoundClick,
         title: soundEnabled ? 'Tắt âm thanh hiệu ứng' : 'Bật âm thanh hiệu ứng',
-        className: 'p-2 rounded-xl text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors'
+        className: 'p-2 rounded-xl text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors apple-btn-press'
       }, React.createElement(soundEnabled ? Icons.Volume2 : Icons.VolumeX, { size: 18 })),
 
       // Theme Toggle (Light / Dark)
@@ -101,33 +106,31 @@ export function Navbar({
         key: 'theme-btn',
         onClick: handleThemeClick,
         title: theme === 'dark' ? 'Chuyển sang Giao diện Sáng' : 'Chuyển sang Giao diện Tối',
-        className: 'p-2 rounded-xl text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors'
+        className: 'p-2 rounded-xl text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors apple-btn-press'
       }, React.createElement(theme === 'dark' ? Icons.Sun : Icons.Moon, { size: 18 })),
 
-      // Quick Setup CTA
+      // Secondary Action: Tạo buổi học (Subtle neutral button - DOES NOT COMPETE with Hero primary button)
       React.createElement('button', {
         key: 'quick-study-btn',
         onClick: () => {
           sound.playClick();
           setView('setup');
         },
-        className: 'hidden sm:flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs md:text-sm shadow-sm shadow-blue-600/30 active:scale-[0.98] transition-all'
+        title: 'Thiết lập buổi học tùy chỉnh',
+        className: 'hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-neutral-100 dark:bg-neutral-800/80 hover:bg-neutral-200/70 dark:hover:bg-neutral-700/60 border border-black/[0.06] dark:border-white/[0.08] text-neutral-700 dark:text-neutral-200 font-medium text-xs md:text-sm transition-colors apple-btn-press'
       }, [
-        React.createElement(Icons.Play, { key: 'play-icon', size: 14 }),
+        React.createElement(Icons.Play, { key: 'play-icon', size: 13, className: 'text-neutral-500 dark:text-neutral-400' }),
         'Tạo buổi học'
       ]),
 
-      // Circular 3-Bars Navigation Toggle Button (Góc trên bên phải)
+      // Focus Mode Toggle (Integrated directly into header control group with unified style)
       React.createElement('button', {
-        key: 'nav-toggle-btn',
-        onClick: () => {
-          sound.playClick();
-          if (onToggleNav) onToggleNav();
-        },
-        title: 'Ẩn thanh điều hướng & tiêu đề',
-        'aria-label': 'Ẩn thanh điều hướng & tiêu đề',
-        className: 'w-9 h-9 md:w-10 md:h-10 rounded-full flex items-center justify-center transition-all duration-200 active:scale-95 shrink-0 shadow-sm bg-neutral-100 hover:bg-neutral-200/80 dark:bg-neutral-800 dark:hover:bg-neutral-700/80 border border-neutral-200/80 dark:border-neutral-700/80 text-neutral-700 dark:text-neutral-200'
-      }, React.createElement(Icons.Menu, { size: 19 }))
+        key: 'focus-mode-btn',
+        onClick: handleFocusClick,
+        title: 'Chế độ tập trung (Ẩn thanh điều hướng & tiêu đề)',
+        'aria-label': 'Chế độ tập trung',
+        className: 'p-2 rounded-xl text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors apple-btn-press'
+      }, React.createElement(Icons.Menu, { size: 18 }))
     ])
   ]);
 }

@@ -12,6 +12,7 @@ export function Flashcard({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [showTipDirectly, setShowTipDirectly] = useState(false);
+  const [isTipExpanded, setIsTipExpanded] = useState(false);
   const [ratings, setRatings] = useState({}); // code -> rating
   const [isFinished, setIsFinished] = useState(false);
 
@@ -35,6 +36,7 @@ export function Flashcard({
     if (currentIndex < cards.length - 1) {
       setIsFlipped(false);
       setShowTipDirectly(false);
+      setIsTipExpanded(false);
       setTimeout(() => {
         setCurrentIndex(prev => prev + 1);
       }, 150);
@@ -57,6 +59,7 @@ export function Flashcard({
       sound.playClick();
       setIsFlipped(false);
       setShowTipDirectly(false);
+      setIsTipExpanded(false);
       setCurrentIndex(prev => prev - 1);
     }
   };
@@ -66,6 +69,7 @@ export function Flashcard({
       sound.playClick();
       setIsFlipped(false);
       setShowTipDirectly(false);
+      setIsTipExpanded(false);
       setCurrentIndex(prev => prev + 1);
     }
   };
@@ -77,6 +81,7 @@ export function Flashcard({
     setCurrentIndex(0);
     setIsFlipped(false);
     setShowTipDirectly(false);
+    setIsTipExpanded(false);
   };
 
   const handleRetryFailed = () => {
@@ -86,6 +91,7 @@ export function Flashcard({
       setCurrentIndex(0);
       setIsFlipped(false);
       setShowTipDirectly(false);
+      setIsTipExpanded(false);
       setRatings({});
       setIsFinished(false);
     }
@@ -289,7 +295,7 @@ export function Flashcard({
 
             showTipDirectly && React.createElement('div', {
               key: 'direct-tip',
-              className: 'p-3 rounded-2xl bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 text-xs max-w-md mx-auto animate-fade-in border border-amber-200/50 dark:border-amber-800/40'
+              className: 'p-3 rounded-2xl bg-neutral-100/90 dark:bg-neutral-800/80 text-neutral-800 dark:text-neutral-200 text-xs max-w-md mx-auto animate-fade-in border border-black/[0.06] dark:border-white/[0.08]'
             }, currentCard.tip)
           ]),
 
@@ -300,44 +306,77 @@ export function Flashcard({
           ])
         ]),
 
-        // BACK SIDE (Rotated 180deg)
+        // BACK SIDE (Rotated 180deg - Refined Information Hierarchy)
         React.createElement('div', {
           key: 'card-back',
-          className: 'absolute inset-0 w-full h-full rounded-3xl p-8 flex flex-col justify-between backface-hidden rotate-y-180 bg-[#fbfbfd] dark:bg-[#252528]'
+          className: 'absolute inset-0 w-full h-full rounded-3xl p-7 md:p-8 flex flex-col justify-between backface-hidden rotate-y-180 bg-[#fbfbfd] dark:bg-[#252528]'
         }, [
-          // Back Top
+          // Back Top: Mã tài khoản + Phân cấp & Tính chất (Thông tin bổ trợ)
           React.createElement('div', { key: 'b-top', className: 'flex items-center justify-between' }, [
-            React.createElement('span', {
-              key: 'code-tag',
-              className: 'font-mono font-bold text-sm px-2.5 py-1 rounded-xl bg-blue-600 text-white shadow-sm font-tabular'
-            }, currentCard.code),
+            React.createElement('div', { key: 'left-tags', className: 'flex items-center gap-2' }, [
+              React.createElement('span', {
+                key: 'code-tag',
+                className: 'font-mono font-bold text-sm px-3 py-1 rounded-xl bg-blue-600 text-white shadow-sm font-tabular'
+              }, currentCard.code),
+              React.createElement('span', {
+                key: 'level-tag',
+                className: 'text-xs font-medium px-2 py-0.5 rounded-lg bg-neutral-200/60 dark:bg-neutral-700/60 text-neutral-600 dark:text-neutral-300'
+              }, `Cấp ${currentCard.level} • Nhóm ${currentCard.group}`)
+            ]),
             React.createElement('span', {
               key: 'nature-tag',
               className: 'text-xs font-semibold px-2.5 py-1 rounded-lg bg-neutral-200/70 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300'
             }, currentCard.nature)
           ]),
 
-          // Back Center Answer
+          // Back Center: TÊN TÀI KHOẢN (Yếu tố nổi bật nhất) + Mẹo ghi nhớ trung tính, dịu mắt
           React.createElement('div', { key: 'b-center', className: 'space-y-4 my-auto text-center' }, [
-            React.createElement('div', { key: 'b-title', className: 'text-2xl md:text-3xl font-bold text-neutral-900 dark:text-neutral-100 tracking-tight' },
-              currentCard.name
-            ),
+            React.createElement('div', {
+              key: 'b-title',
+              className: 'text-2xl md:text-3xl font-extrabold text-neutral-900 dark:text-neutral-100 tracking-tight leading-snug px-2'
+            }, currentCard.name),
 
+            // Khu vực Mẹo ghi nhớ: Tinh tế, trung tính, không lấn át tên tài khoản
             currentCard.tip && React.createElement('div', {
-              key: 'b-tip',
-              className: 'p-4 rounded-2xl bg-amber-50/80 dark:bg-amber-950/30 border border-amber-200/60 dark:border-amber-900/40 text-amber-900 dark:text-amber-200 text-xs text-left max-w-lg mx-auto space-y-1'
+              key: 'tip-area',
+              className: 'max-w-md mx-auto pt-1'
             }, [
-              React.createElement('div', { key: 'h', className: 'font-bold uppercase tracking-wider text-[10px] text-amber-700 dark:text-amber-400 flex items-center gap-1' }, [
-                React.createElement(Icons.Lightbulb, { size: 13 }),
-                'Mẹo ghi nhớ'
-              ]),
-              React.createElement('p', { key: 'p', className: 'leading-relaxed' }, currentCard.tip)
+              !isTipExpanded ? React.createElement('button', {
+                key: 'tip-expand-btn',
+                type: 'button',
+                onClick: (e) => {
+                  e.stopPropagation();
+                  sound.playClick();
+                  setIsTipExpanded(true);
+                },
+                className: 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-neutral-200/60 hover:bg-neutral-200 dark:bg-neutral-800/80 dark:hover:bg-neutral-700/80 text-neutral-600 dark:text-neutral-300 text-xs font-medium border border-black/[0.04] dark:border-white/[0.06] transition-colors apple-btn-press'
+              }, [
+                React.createElement(Icons.Lightbulb, { size: 14, className: 'text-amber-500' }),
+                'Xem mẹo ghi nhớ'
+              ]) : React.createElement('div', {
+                key: 'tip-card-expanded',
+                onClick: (e) => e.stopPropagation(),
+                className: 'p-3.5 rounded-2xl bg-neutral-200/50 dark:bg-neutral-800/60 border border-black/[0.04] dark:border-white/[0.06] text-neutral-700 dark:text-neutral-300 text-xs text-left space-y-1.5 animate-fade-in'
+              }, [
+                React.createElement('div', { key: 'tip-hdr', className: 'flex items-center justify-between text-[11px] font-semibold text-neutral-500 dark:text-neutral-400' }, [
+                  React.createElement('span', { key: 't-lbl', className: 'flex items-center gap-1 text-amber-600 dark:text-amber-400' }, [
+                    React.createElement(Icons.Lightbulb, { size: 13 }),
+                    'Mẹo ghi nhớ'
+                  ]),
+                  React.createElement('button', {
+                    key: 'tip-collapse',
+                    onClick: () => setIsTipExpanded(false),
+                    className: 'text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200'
+                  }, 'Thu gọn')
+                ]),
+                React.createElement('p', { key: 'tip-txt', className: 'leading-relaxed' }, currentCard.tip)
+              ])
             ])
           ]),
 
           // Back Bottom Hint
           React.createElement('div', { key: 'b-bot', className: 'text-center text-xs text-neutral-400 dark:text-neutral-500' },
-            'Đánh giá mức độ ghi nhớ của bạn ở bên dưới để tiếp tục'
+            'Đánh giá mức độ ghi nhớ của bạn ở bên dưới (hoặc phím 1-4)'
           )
         ])
       ])

@@ -557,16 +557,19 @@ export function App() {
       ])
     ]),
 
-    // Floating circular button to restore header & sidebar at the same time
+    // Restore navigation button (ONLY appears in Focus Mode when header & sidebar are hidden)
     !isNavVisible && React.createElement('button', {
       key: 'floating-nav-btn',
       onClick: () => {
         sound.playClick();
         setIsNavVisible(true);
       },
-      title: 'Hiện lại thanh điều hướng & tiêu đề',
-      'aria-label': 'Hiện lại thanh điều hướng & tiêu đề',
-      className: 'fixed top-3 right-4 md:right-8 z-50 w-9 h-9 md:w-10 md:h-10 rounded-full bg-white/90 dark:bg-[#1c1c1e]/90 hover:bg-neutral-100 dark:hover:bg-neutral-800 backdrop-blur-xl border border-neutral-200/80 dark:border-neutral-700/80 text-neutral-700 dark:text-neutral-200 shadow-lg flex items-center justify-center transition-all duration-200 active:scale-95 animate-fade-in'
-    }, React.createElement(Icons.Menu, { size: 19 }))
+      title: 'Thoát chế độ tập trung (Hiện thanh điều hướng - Phím Esc)',
+      'aria-label': 'Thoát chế độ tập trung',
+      className: 'fixed top-3 right-4 md:right-6 z-50 px-3 py-1.5 rounded-xl bg-white/90 dark:bg-[#1c1c1e]/90 hover:bg-neutral-100 dark:hover:bg-neutral-800 backdrop-blur-xl border border-black/[0.08] dark:border-white/[0.1] text-neutral-700 dark:text-neutral-200 shadow-md flex items-center gap-1.5 text-xs font-medium transition-all duration-200 active:scale-95 animate-fade-in apple-btn-press'
+    }, [
+      React.createElement(Icons.Menu, { key: 'ic', size: 15 }),
+      React.createElement('span', { key: 'txt', className: 'hidden sm:inline' }, 'Hiện điều hướng')
+    ])
   ]);
 }

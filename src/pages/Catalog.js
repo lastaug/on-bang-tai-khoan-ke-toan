@@ -1,7 +1,80 @@
-// Apple HIG Account Catalog Page Component with Tree & List View
-import React, { useState, useMemo } from 'https://esm.sh/react@18.2.0';
+// Apple HIG Account Catalog Page Component with Tree & List View & Custom Apple Filter Menus
+import React, { useState, useMemo, useRef, useEffect } from 'https://esm.sh/react@18.2.0';
 import { Icons } from '../components/Icons.js';
 import { sound } from '../services/audio.js';
+
+// Custom Apple Popover Filter Dropdown Component
+function FilterDropdown({ label, value, options, onChange }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    const handleOutsideClick = (e) => {
+      if (containerRef.current && !containerRef.current.contains(e.target)) {
+        setIsOpen(false);
+      }
+    };
+    if (isOpen) {
+      document.addEventListener('pointerdown', handleOutsideClick);
+    }
+    return () => {
+      document.removeEventListener('pointerdown', handleOutsideClick);
+    };
+  }, [isOpen]);
+
+  const selectedOption = options.find(o => o.value === value) || options[0];
+
+  return React.createElement('div', {
+    ref: containerRef,
+    className: 'relative inline-block text-left'
+  }, [
+    React.createElement('div', { className: 'flex items-center gap-1.5' }, [
+      label && React.createElement('span', { className: 'text-xs font-medium text-neutral-400' }, label),
+      React.createElement('button', {
+        type: 'button',
+        onClick: () => {
+          sound.playClick();
+          setIsOpen(prev => !prev);
+        },
+        className: `flex items-center gap-2 text-xs font-medium py-1.5 px-3 rounded-xl border transition-all ${
+          isOpen
+            ? 'bg-neutral-200/80 dark:bg-neutral-700/80 border-blue-500/50 shadow-sm'
+            : 'bg-neutral-100/80 dark:bg-neutral-800/70 border-black/[0.06] dark:border-white/[0.08] text-neutral-800 dark:text-neutral-200 hover:bg-neutral-200/50 dark:hover:bg-neutral-700/50'
+        }`
+      }, [
+        React.createElement('span', { className: 'truncate max-w-[130px] sm:max-w-[180px]' }, selectedOption?.label),
+        React.createElement(Icons.ChevronDown, {
+          size: 13,
+          className: `text-neutral-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`
+        })
+      ])
+    ]),
+
+    // Dropdown popover
+    isOpen && React.createElement('div', {
+      className: 'absolute left-0 mt-1.5 w-56 max-h-64 overflow-y-auto rounded-2xl bg-white/95 dark:bg-[#1c1c1e]/95 backdrop-blur-xl border border-black/[0.08] dark:border-white/[0.1] shadow-xl z-50 py-1.5 animate-fade-in divide-y divide-black/[0.03] dark:divide-white/[0.04]'
+    }, options.map(opt => {
+      const isSelected = opt.value === value;
+      return React.createElement('button', {
+        key: opt.value,
+        type: 'button',
+        onClick: () => {
+          sound.playClick();
+          onChange(opt.value);
+          setIsOpen(false);
+        },
+        className: `w-full px-3.5 py-2 text-left text-xs font-medium flex items-center justify-between transition-colors ${
+          isSelected
+            ? 'bg-blue-50/80 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 font-semibold'
+            : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800/80'
+        }`
+      }, [
+        React.createElement('span', { className: 'truncate' }, opt.label),
+        isSelected && React.createElement(Icons.Check, { size: 14, className: 'text-blue-600 dark:text-blue-400 shrink-0 ml-2' })
+      ]);
+    }))
+  ]);
+}
 
 export function Catalog({
   accounts,
@@ -22,6 +95,24 @@ export function Catalog({
     { id: '1', label: 'Đang học', className: 'badge-status-1' },
     { id: '2', label: 'Sắp thuộc', className: 'badge-status-2' },
     { id: '3', label: 'Đã thuộc', className: 'badge-status-3' }
+  ];
+
+  const groupFilterOptions = useMemo(() => [
+    { value: 'all', label: 'Tất cả 8 nhóm' },
+    ...groups.map(g => ({ value: g.id.toString(), label: `Nhóm ${g.id}: ${g.name}` }))
+  ], [groups]);
+
+  const levelFilterOptions = [
+    { value: 'all', label: 'Tất cả các cấp' },
+    { value: '1', label: 'Cấp 1 (3 chữ số)' },
+    { value: '2', label: 'Cấp 2 (4 chữ số)' },
+    { value: '3', label: 'Cấp 3 (5 chữ số)' },
+    { value: '4', label: 'Cấp 4 (6 chữ số)' }
+  ];
+
+  const stateFilterOptions = [
+    { value: 'all', label: 'Tất cả trạng thái' },
+    ...stateLabels.map(st => ({ value: st.id, label: st.label }))
   ];
 
   const toggleNode = (code, e) => {
@@ -201,49 +292,34 @@ export function Catalog({
         ])
       ]),
 
-      // Filter Selectors Row
+      // Custom Apple Popover Filters Row
       React.createElement('div', { key: 'filters-row', className: 'flex flex-wrap items-center gap-3 pt-3 border-t border-black/[0.05] dark:border-white/[0.06]' }, [
-        // Group Filter
-        React.createElement('div', { key: 'grp-filter', className: 'flex items-center gap-1.5' }, [
-          React.createElement('span', { className: 'text-xs font-medium text-neutral-400' }, 'Nhóm:'),
-          React.createElement('select', {
-            value: selectedGroup,
-            onChange: (e) => setSelectedGroup(e.target.value),
-            className: 'text-xs font-medium py-1.5 px-2.5 rounded-xl bg-neutral-100/80 dark:bg-neutral-800/70 text-neutral-800 dark:text-neutral-200 border border-black/[0.06] dark:border-white/[0.08] focus:outline-none focus:ring-2 focus:ring-blue-500/30'
-          }, [
-            React.createElement('option', { key: 'all', value: 'all' }, 'Tất cả 8 nhóm'),
-            ...groups.map(g => React.createElement('option', { key: g.id, value: g.id }, `Nhóm ${g.id}: ${g.name}`))
-          ])
-        ]),
+        // Group Filter Popover
+        React.createElement(FilterDropdown, {
+          key: 'group-dropdown',
+          label: 'Nhóm:',
+          value: selectedGroup,
+          options: groupFilterOptions,
+          onChange: (val) => setSelectedGroup(val)
+        }),
 
-        // Level Filter
-        React.createElement('div', { key: 'lvl-filter', className: 'flex items-center gap-1.5' }, [
-          React.createElement('span', { className: 'text-xs font-medium text-neutral-400' }, 'Cấp:'),
-          React.createElement('select', {
-            value: selectedLevel,
-            onChange: (e) => setSelectedLevel(e.target.value),
-            className: 'text-xs font-medium py-1.5 px-2.5 rounded-xl bg-neutral-100/80 dark:bg-neutral-800/70 text-neutral-800 dark:text-neutral-200 border border-black/[0.06] dark:border-white/[0.08] focus:outline-none focus:ring-2 focus:ring-blue-500/30'
-          }, [
-            React.createElement('option', { key: 'all', value: 'all' }, 'Tất cả các cấp'),
-            React.createElement('option', { key: '1', value: '1' }, 'Cấp 1 (3 chữ số)'),
-            React.createElement('option', { key: '2', value: '2' }, 'Cấp 2 (4 chữ số)'),
-            React.createElement('option', { key: '3', value: '3' }, 'Cấp 3 (5 chữ số)'),
-            React.createElement('option', { key: '4', value: '4' }, 'Cấp 4 (6 chữ số)')
-          ])
-        ]),
+        // Level Filter Popover
+        React.createElement(FilterDropdown, {
+          key: 'level-dropdown',
+          label: 'Cấp:',
+          value: selectedLevel,
+          options: levelFilterOptions,
+          onChange: (val) => setSelectedLevel(val)
+        }),
 
-        // Status Filter
-        React.createElement('div', { key: 'st-filter', className: 'flex items-center gap-1.5' }, [
-          React.createElement('span', { className: 'text-xs font-medium text-neutral-400' }, 'Trạng thái:'),
-          React.createElement('select', {
-            value: selectedState,
-            onChange: (e) => setSelectedState(e.target.value),
-            className: 'text-xs font-medium py-1.5 px-2.5 rounded-xl bg-neutral-100/80 dark:bg-neutral-800/70 text-neutral-800 dark:text-neutral-200 border border-black/[0.06] dark:border-white/[0.08] focus:outline-none focus:ring-2 focus:ring-blue-500/30'
-          }, [
-            React.createElement('option', { key: 'all', value: 'all' }, 'Tất cả trạng thái'),
-            ...stateLabels.map(st => React.createElement('option', { key: st.id, value: st.id }, st.label))
-          ])
-        ]),
+        // Status Filter Popover
+        React.createElement(FilterDropdown, {
+          key: 'status-dropdown',
+          label: 'Trạng thái:',
+          value: selectedState,
+          options: stateFilterOptions,
+          onChange: (val) => setSelectedState(val)
+        }),
 
         // Matching Count Pill
         React.createElement('div', { key: 'count-pill', className: 'ml-auto text-xs font-medium text-neutral-400 dark:text-neutral-500 font-tabular' },
