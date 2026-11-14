@@ -1,4 +1,4 @@
-// Apple HIG Multiple Choice Quiz Component
+// Apple HIG Multiple Choice Quiz Component (Zero-Jitter & Arrow Key Navigation)
 import React, { useState, useEffect, useMemo, useCallback } from 'https://esm.sh/react@18.2.0';
 import { Icons } from '../components/Icons.js';
 import { sound } from '../services/audio.js';
@@ -9,60 +9,58 @@ export function Quiz({
   onCompleteSession,
   onBackToDashboard
 }) {
-  const [questions, setQuestions] = useState(sessionConfig?.accounts || []);
+  const rawQuestions = sessionConfig?.accounts || [];
+  const direction = sessionConfig?.direction || 'code-to-name';
+
+  // Pre-generate stable questions and options once to guarantee ZERO jitter and consistency when navigating back/forward
+  const [preparedQuiz, setPreparedQuiz] = useState(() => {
+    return rawQuestions.map((acc, qIdx) => {
+      const isCodeToName = direction === 'code-to-name' || (direction === 'mixed' && qIdx % 2 === 0);
+
+      // Distractors from same group or other groups
+      const sameGroup = allAccounts.filter(a => a.code !== acc.code && a.group === acc.group);
+      const otherAccounts = allAccounts.filter(a => a.code !== acc.code && a.group !== acc.group);
+
+      let pool = [...sameGroup];
+      if (pool.length < 3) {
+        pool = [...pool, ...otherAccounts];
+      }
+      const shuffledDistractors = pool.sort(() => Math.random() - 0.5).slice(0, 3);
+
+      const opts = [
+        {
+          account: acc,
+          text: isCodeToName ? acc.name : acc.code,
+          isCorrect: true
+        },
+        ...shuffledDistractors.map(d => ({
+          account: d,
+          text: isCodeToName ? d.name : d.code,
+          isCorrect: false
+        }))
+      ].sort(() => Math.random() - 0.5);
+
+      return {
+        account: acc,
+        isCodeToName,
+        options: opts,
+        correctText: isCodeToName ? acc.name : acc.code
+      };
+    });
+  });
+
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [selectedOption, setSelectedOption] = useState(null);
-  const [isAnswered, setIsAnswered] = useState(false);
-  const [answersLog, setAnswersLog] = useState([]); // [{ account, isCorrect, chosenOption }]
+  const [answersMap, setAnswersMap] = useState({}); // { [index]: { selectedOption, isCorrect } }
   const [isFinished, setIsFinished] = useState(false);
   const [streak, setStreak] = useState(0);
 
-  const direction = sessionConfig?.direction || 'code-to-name';
+  const currentQ = preparedQuiz[currentIndex];
+  const currentAnswer = answersMap[currentIndex];
+  const isAnswered = !!currentAnswer;
 
-  const currentAccount = questions[currentIndex];
-
-  // Generate 4 options (1 correct, 3 distractors from same group or similar level)
-  const options = useMemo(() => {
-    if (!currentAccount) return [];
-
-    const isCodeToName = direction === 'code-to-name' || (direction === 'mixed' && currentIndex % 2 === 0);
-
-    // Filter potential distractors
-    const sameGroup = allAccounts.filter(a => a.code !== currentAccount.code && a.group === currentAccount.group);
-    const otherAccounts = allAccounts.filter(a => a.code !== currentAccount.code && a.group !== currentAccount.group);
-
-    // Pick 3 distractors preferentially from same group
-    let pool = [...sameGroup];
-    if (pool.length < 3) {
-      pool = [...pool, ...otherAccounts];
-    }
-    const shuffledPool = pool.sort(() => Math.random() - 0.5);
-    const distractors = shuffledPool.slice(0, 3);
-
-    const rawList = [
-      {
-        account: currentAccount,
-        text: isCodeToName ? currentAccount.name : currentAccount.code,
-        isCorrect: true
-      },
-      ...distractors.map(d => ({
-        account: d,
-        text: isCodeToName ? d.name : d.code,
-        isCorrect: false
-      }))
-    ];
-
-    // Shuffle options
-    return rawList.sort(() => Math.random() - 0.5);
-  }, [currentAccount, allAccounts, direction, currentIndex]);
-
-  const isCodeToName = direction === 'code-to-name' || (direction === 'mixed' && currentIndex % 2 === 0);
-
+  // Handle select option
   const handleSelectOption = useCallback((option) => {
     if (isAnswered) return;
-
-    setSelectedOption(option);
-    setIsAnswered(true);
 
     const isCorrect = option.isCorrect;
     if (isCorrect) {
@@ -73,62 +71,116 @@ export function Quiz({
       setStreak(0);
     }
 
-    setAnswersLog(prev => [
+    setAnswersMap(prev => ({
       ...prev,
-      {
-        account: currentAccount,
+      [currentIndex]: {
+        selectedOption: option,
         isCorrect,
         chosen: option.text,
-        correctText: isCodeToName ? currentAccount.name : currentAccount.code
+        account: currentQ.account,
+        correctText: currentQ.correctText
       }
-    ]);
-  }, [isAnswered, currentAccount, isCodeToName]);
+    }));
+  }, [isAnswered, currentIndex, currentQ]);
 
-  const handleNext = () => {
-    sound.playClick();
-    if (currentIndex < questions.length - 1) {
+  // Navigate to previous question (ArrowLeft)
+  const handlePrev = useCallback(() => {
+    if (currentIndex > 0) {
+      sound.playClick();
+      setCurrentIndex(prev => prev - 1);
+    }
+  }, [currentIndex]);
+
+  // Navigate to next question (ArrowRight)
+  const handleNext = useCallback(() => {
+    if (currentIndex < preparedQuiz.length - 1) {
+      sound.playClick();
       setCurrentIndex(prev => prev + 1);
-      setSelectedOption(null);
-      setIsAnswered(false);
-    } else {
+    } else if (Object.keys(answersMap).length >= preparedQuiz.length) {
+      // Completed all questions
       sound.playComplete();
       setIsFinished(true);
       if (onCompleteSession) {
-        const correctCount = answersLog.filter(a => a.isCorrect).length + (selectedOption?.isCorrect ? 1 : 0);
+        const answersList = Object.values(answersMap);
+        const correctCount = answersList.filter(a => a.isCorrect).length;
         onCompleteSession({
           mode: 'quiz',
-          total_items: questions.length,
+          total_items: preparedQuiz.length,
           correct_items: correctCount,
-          answers: answersLog
+          answers: answersList
+        });
+      }
+    } else if (isAnswered) {
+      // Find next unanswered question or finish
+      sound.playComplete();
+      setIsFinished(true);
+      if (onCompleteSession) {
+        const answersList = Object.values(answersMap);
+        const correctCount = answersList.filter(a => a.isCorrect).length;
+        onCompleteSession({
+          mode: 'quiz',
+          total_items: preparedQuiz.length,
+          correct_items: correctCount,
+          answers: answersList
         });
       }
     }
-  };
+  }, [currentIndex, preparedQuiz.length, answersMap, isAnswered, onCompleteSession]);
 
+  // Retry failed questions
   const handleRetryFailed = () => {
-    const failedAccounts = answersLog.filter(a => !a.isCorrect).map(a => a.account);
-    if (failedAccounts.length > 0) {
+    const failedOnes = Object.values(answersMap).filter(a => !a.isCorrect).map(a => a.account);
+    if (failedOnes.length > 0) {
       sound.playClick();
-      setQuestions(failedAccounts);
+      const newPrepared = failedOnes.map((acc, qIdx) => {
+        const isCodeToName = direction === 'code-to-name';
+        const sameGroup = allAccounts.filter(a => a.code !== acc.code && a.group === acc.group);
+        const otherAccounts = allAccounts.filter(a => a.code !== acc.code && a.group !== acc.group);
+        let pool = [...sameGroup];
+        if (pool.length < 3) pool = [...pool, ...otherAccounts];
+        const shuffledDistractors = pool.sort(() => Math.random() - 0.5).slice(0, 3);
+        const opts = [
+          { account: acc, text: isCodeToName ? acc.name : acc.code, isCorrect: true },
+          ...shuffledDistractors.map(d => ({ account: d, text: isCodeToName ? d.name : d.code, isCorrect: false }))
+        ].sort(() => Math.random() - 0.5);
+
+        return {
+          account: acc,
+          isCodeToName,
+          options: opts,
+          correctText: isCodeToName ? acc.name : acc.code
+        };
+      });
+
+      setPreparedQuiz(newPrepared);
       setCurrentIndex(0);
-      setSelectedOption(null);
-      setIsAnswered(false);
-      setAnswersLog([]);
+      setAnswersMap({});
       setIsFinished(false);
       setStreak(0);
     }
   };
 
-  // Keyboard navigation
+  // Keyboard navigation:
+  // - ArrowLeft: Previous question
+  // - ArrowRight: Next question
+  // - 1, 2, 3, 4: Pick options
+  // - Enter: Next / Complete
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (isFinished) return;
-      if (!isAnswered) {
-        if (e.key === '1' && options[0]) handleSelectOption(options[0]);
-        else if (e.key === '2' && options[1]) handleSelectOption(options[1]);
-        else if (e.key === '3' && options[2]) handleSelectOption(options[2]);
-        else if (e.key === '4' && options[3]) handleSelectOption(options[3]);
-      } else {
+
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        handlePrev();
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        handleNext();
+      } else if (!isAnswered && currentQ) {
+        if (e.key === '1' && currentQ.options[0]) handleSelectOption(currentQ.options[0]);
+        else if (e.key === '2' && currentQ.options[1]) handleSelectOption(currentQ.options[1]);
+        else if (e.key === '3' && currentQ.options[2]) handleSelectOption(currentQ.options[2]);
+        else if (e.key === '4' && currentQ.options[3]) handleSelectOption(currentQ.options[3]);
+      } else if (isAnswered) {
         if (e.key === 'Enter' || e.code === 'Space') {
           e.preventDefault();
           handleNext();
@@ -138,9 +190,9 @@ export function Quiz({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isAnswered, isFinished, options, handleSelectOption]);
+  }, [isAnswered, isFinished, currentQ, handleSelectOption, handlePrev, handleNext]);
 
-  if (!currentAccount || questions.length === 0) {
+  if (!currentQ || preparedQuiz.length === 0) {
     return React.createElement('div', { className: 'p-12 text-center space-y-4' }, [
       React.createElement('div', { className: 'text-base font-semibold text-neutral-600 dark:text-neutral-400' }, 'Không có câu hỏi nào trong đề thi này.'),
       React.createElement('button', {
@@ -150,12 +202,13 @@ export function Quiz({
     ]);
   }
 
-  // Finished Quiz Summary
+  // Finished Quiz Summary Screen
   if (isFinished) {
-    const total = questions.length;
-    const correctCount = answersLog.filter(a => a.isCorrect).length;
+    const total = preparedQuiz.length;
+    const answersList = Object.values(answersMap);
+    const correctCount = answersList.filter(a => a.isCorrect).length;
     const scorePct = Math.round((correctCount / total) * 100);
-    const failedItems = answersLog.filter(a => !a.isCorrect);
+    const failedItems = answersList.filter(a => !a.isCorrect);
 
     return React.createElement('div', { className: 'max-w-2xl mx-auto space-y-6 animate-fade-in p-6' }, [
       React.createElement('div', {
@@ -225,9 +278,10 @@ export function Quiz({
     ]);
   }
 
-  const progressPct = Math.round(((currentIndex + 1) / questions.length) * 100);
+  const answeredCount = Object.keys(answersMap).length;
+  const progressPct = Math.round(((currentIndex + 1) / preparedQuiz.length) * 100);
 
-  return React.createElement('div', { className: 'max-w-2xl mx-auto space-y-6 animate-fade-in pb-12 select-none' }, [
+  return React.createElement('div', { className: 'max-w-2xl mx-auto space-y-5 animate-fade-in pb-12 select-none' }, [
     // Top Bar: Back, Progress, Streak
     React.createElement('div', { key: 'top-bar', className: 'flex items-center justify-between gap-4' }, [
       React.createElement('button', {
@@ -240,9 +294,10 @@ export function Quiz({
       ]),
 
       React.createElement('div', { key: 'progress-box', className: 'flex-1 max-w-xs space-y-1 text-center' }, [
-        React.createElement('div', { className: 'text-xs font-semibold text-neutral-500 dark:text-neutral-400' },
-          `Câu ${currentIndex + 1} / ${questions.length}`
-        ),
+        React.createElement('div', { className: 'flex items-center justify-between text-xs font-semibold text-neutral-500 dark:text-neutral-400' }, [
+          React.createElement('span', { key: 'cur' }, `Câu ${currentIndex + 1} / ${preparedQuiz.length}`),
+          React.createElement('span', { key: 'ans', className: 'text-neutral-400 font-normal' }, `Đã trả lời: ${answeredCount}/${preparedQuiz.length}`)
+        ]),
         React.createElement('div', { className: 'w-full h-1.5 rounded-full bg-neutral-200 dark:bg-neutral-700 overflow-hidden' },
           React.createElement('div', {
             className: 'h-full bg-blue-600 rounded-full transition-all duration-300',
@@ -253,11 +308,11 @@ export function Quiz({
 
       streak > 1 ? React.createElement('div', {
         key: 'streak',
-        className: 'flex items-center gap-1 text-xs font-bold text-amber-500 bg-amber-50 dark:bg-amber-950/40 px-2.5 py-1 rounded-full'
+        className: 'flex items-center gap-1 text-xs font-bold text-amber-500 bg-amber-50 dark:bg-amber-950/40 px-2.5 py-1 rounded-full shrink-0'
       }, [
         React.createElement(Icons.Flame, { size: 14 }),
-        `${streak} đúng liên tiếp`
-      ]) : React.createElement('div', { key: 'sp', className: 'w-16' })
+        `${streak} đúng`
+      ]) : React.createElement('div', { key: 'sp', className: 'w-14' })
     ]),
 
     // Question Card
@@ -266,36 +321,47 @@ export function Quiz({
       className: 'p-6 md:p-8 rounded-3xl bg-white dark:bg-[#1c1c1e] border border-neutral-200/80 dark:border-neutral-800 shadow-sm space-y-4 text-center'
     }, [
       React.createElement('div', { key: 'badge', className: 'inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400' },
-        `Cấp ${currentAccount.level} • Nhóm ${currentAccount.group}`
+        `Cấp ${currentQ.account.level} • Nhóm ${currentQ.account.group}`
       ),
 
       React.createElement('div', { key: 'q-title', className: 'space-y-2' }, [
         React.createElement('div', { key: 'sub', className: 'text-xs font-semibold text-neutral-400 uppercase tracking-widest' },
-          isCodeToName ? 'MÃ TÀI KHOẢN SAU ĐÂY CÓ TÊN LÀ GÌ?' : 'TÀI KHOẢN SAU ĐÂY CÓ SỐ HIỆU LÀ GÌ?'
+          currentQ.isCodeToName ? 'MÃ TÀI KHOẢN SAU ĐÂY CÓ TÊN LÀ GÌ?' : 'TÀI KHOẢN SAU ĐÂY CÓ SỐ HIỆU LÀ GÌ?'
         ),
         React.createElement('div', {
           key: 'main',
           className: `font-extrabold tracking-tight text-neutral-900 dark:text-neutral-100 ${
-            isCodeToName ? 'font-mono text-5xl md:text-6xl text-blue-600 dark:text-blue-400' : 'text-2xl md:text-3xl'
+            currentQ.isCodeToName ? 'font-mono text-5xl md:text-6xl text-blue-600 dark:text-blue-400' : 'text-2xl md:text-3xl'
           }`
-        }, isCodeToName ? currentAccount.code : currentAccount.name)
+        }, currentQ.isCodeToName ? currentQ.account.code : currentQ.account.name)
       ])
     ]),
 
-    // 4 Options Grid
-    React.createElement('div', { key: 'options-grid', className: 'grid grid-cols-1 gap-3' },
-      options.map((opt, idx) => {
+    // 4 Options Grid (STABLE, FIXED LAYOUT - ZERO JITTER)
+    // - Every button has min-h-[64px], fixed border-2
+    // - Consistent font-semibold on text
+    // - Fixed 24px icon slot reserved on right side at all times to prevent layout shift
+    React.createElement('div', { key: 'options-grid', className: 'grid grid-cols-1 gap-2.5' },
+      currentQ.options.map((opt, idx) => {
         const optionNumber = idx + 1;
-        const isSelected = selectedOption === opt;
-        let btnStyle = 'bg-white dark:bg-[#1c1c1e] border-neutral-200/80 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800/60 text-neutral-800 dark:text-neutral-200';
+        const isSelected = currentAnswer?.selectedOption?.text === opt.text;
+
+        // Rock-solid fixed styling without layout displacement
+        let containerClass = 'bg-white dark:bg-[#1c1c1e] border-neutral-200/80 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 text-neutral-800 dark:text-neutral-200';
+        let keyPillClass = 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500';
+        let iconContent = null;
 
         if (isAnswered) {
           if (opt.isCorrect) {
-            btnStyle = 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-500 text-emerald-900 dark:text-emerald-200 shadow-sm font-semibold';
+            containerClass = 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-500 text-emerald-900 dark:text-emerald-100';
+            keyPillClass = 'bg-emerald-600 text-white';
+            iconContent = React.createElement(Icons.CheckCircle2, { size: 20, className: 'text-emerald-600 dark:text-emerald-400' });
           } else if (isSelected && !opt.isCorrect) {
-            btnStyle = 'bg-red-50 dark:bg-red-950/40 border-red-500 text-red-900 dark:text-red-200 shadow-sm line-through';
+            containerClass = 'bg-red-50 dark:bg-red-950/40 border-red-500 text-red-900 dark:text-red-100';
+            keyPillClass = 'bg-red-500 text-white';
+            iconContent = React.createElement(Icons.XCircle, { size: 20, className: 'text-red-500' });
           } else {
-            btnStyle = 'opacity-40 border-neutral-200 dark:border-neutral-800';
+            containerClass = 'opacity-40 bg-white dark:bg-[#1c1c1e] border-neutral-200/60 dark:border-neutral-800 text-neutral-400 dark:text-neutral-500';
           }
         }
 
@@ -303,56 +369,80 @@ export function Quiz({
           key: idx,
           disabled: isAnswered,
           onClick: () => handleSelectOption(opt),
-          className: `p-4 rounded-2xl border text-left flex items-center justify-between transition-all ${btnStyle}`
+          className: `w-full min-h-[62px] px-4 py-3.5 rounded-2xl border-2 text-left flex items-center justify-between transition-colors ${containerClass}`
         }, [
-          React.createElement('div', { key: 'opt-content', className: 'flex items-center gap-3' }, [
+          // Left: Key badge (1, 2, 3, 4) + Option Text
+          React.createElement('div', { key: 'left-block', className: 'flex items-center gap-3 min-w-0 pr-2' }, [
             React.createElement('span', {
-              key: 'key-pill',
-              className: `w-7 h-7 rounded-lg text-xs font-bold flex items-center justify-center shrink-0 ${
-                isAnswered && opt.isCorrect
-                  ? 'bg-emerald-600 text-white'
-                  : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500'
-              }`
+              key: 'num-badge',
+              className: `w-7 h-7 rounded-lg text-xs font-bold flex items-center justify-center shrink-0 transition-colors ${keyPillClass}`
             }, optionNumber),
             React.createElement('span', {
               key: 'txt',
-              className: `text-sm font-medium ${!isCodeToName ? 'font-mono font-bold text-base text-blue-600 dark:text-blue-400' : ''}`
+              className: `text-sm font-semibold leading-snug break-words ${!currentQ.isCodeToName ? 'font-mono text-base text-blue-600 dark:text-blue-400' : ''}`
             }, opt.text)
           ]),
 
-          isAnswered && (
-            opt.isCorrect
-              ? React.createElement(Icons.CheckCircle2, { key: 'cor-ic', size: 20, className: 'text-emerald-600 dark:text-emerald-400 shrink-0' })
-              : (isSelected ? React.createElement(Icons.XCircle, { key: 'wr-ic', size: 20, className: 'text-red-500 shrink-0' }) : null)
-          )
+          // Right: FIXED 24px slot reserved at all times so nothing ever shifts
+          React.createElement('div', {
+            key: 'fixed-icon-slot',
+            className: 'w-6 h-6 flex items-center justify-center shrink-0'
+          }, iconContent)
         ]);
       })
     ),
 
-    // Explanation Banner & Next CTA
-    isAnswered && React.createElement('div', { key: 'exp-box', className: 'space-y-4 animate-fade-in' }, [
-      React.createElement('div', {
-        className: 'p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200/60 dark:border-neutral-700/60 space-y-2'
-      }, [
-        React.createElement('div', { className: 'flex items-center justify-between text-xs font-bold text-neutral-500' }, [
-          React.createElement('span', {}, `TÀI KHOẢN: ${currentAccount.code} - ${currentAccount.name}`),
-          React.createElement('span', {}, currentAccount.nature)
-        ]),
-        currentAccount.tip && React.createElement('div', {
-          className: 'text-xs text-amber-700 dark:text-amber-300 flex items-start gap-1.5 pt-1'
+    // Navigation & Explanation Bar (ArrowLeft / ArrowRight Support)
+    React.createElement('div', { key: 'nav-actions-bar', className: 'space-y-3 pt-1' }, [
+      // Previous & Next Navigation Buttons
+      React.createElement('div', { key: 'nav-row', className: 'flex items-center justify-between gap-3' }, [
+        React.createElement('button', {
+          key: 'btn-prev',
+          disabled: currentIndex === 0,
+          onClick: handlePrev,
+          title: 'Phím Mũi tên trái (←)',
+          className: `px-4 py-3 rounded-2xl border text-xs font-bold flex items-center gap-2 transition-all ${
+            currentIndex === 0
+              ? 'opacity-40 cursor-not-allowed border-neutral-200 dark:border-neutral-800'
+              : 'hover:bg-neutral-100 dark:hover:bg-neutral-800 border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 active:scale-95'
+          }`
         }, [
-          React.createElement(Icons.Lightbulb, { size: 14, className: 'shrink-0 mt-0.5' }),
-          React.createElement('span', {}, currentAccount.tip)
+          React.createElement(Icons.ArrowLeft, { size: 15 }),
+          'Câu trước (←)'
+        ]),
+
+        React.createElement('button', {
+          key: 'btn-next',
+          onClick: handleNext,
+          title: 'Phím Mũi tên phải (→) hoặc Enter',
+          className: `flex-1 py-3 px-5 rounded-2xl font-bold text-xs md:text-sm shadow-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-all ${
+            isAnswered
+              ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-600/30'
+              : 'bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300'
+          }`
+        }, [
+          currentIndex < preparedQuiz.length - 1
+            ? (isAnswered ? 'Câu tiếp theo (→)' : 'Bỏ qua / Câu tiếp (→)')
+            : 'Xem kết quả bài thi',
+          React.createElement(Icons.ArrowRight, { size: 15 })
         ])
       ]),
 
-      React.createElement('button', {
-        key: 'next-btn',
-        onClick: handleNext,
-        className: 'w-full py-3.5 px-6 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-md shadow-blue-600/30 active:scale-[0.98] transition-all flex items-center justify-center gap-2'
+      // Explanation & Tip Box (Smooth appearance)
+      isAnswered && React.createElement('div', {
+        key: 'explanation-box',
+        className: 'p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200/60 dark:border-neutral-700/60 space-y-2 animate-fade-in'
       }, [
-        currentIndex < questions.length - 1 ? 'Câu tiếp theo (Enter)' : 'Xem kết quả bài thi',
-        React.createElement(Icons.ArrowRight, { size: 16 })
+        React.createElement('div', { className: 'flex items-center justify-between text-xs font-bold text-neutral-500' }, [
+          React.createElement('span', {}, `TÀI KHOẢN: ${currentQ.account.code} - ${currentQ.account.name}`),
+          React.createElement('span', { className: 'font-normal px-2 py-0.5 rounded bg-neutral-200/60 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300' }, currentQ.account.nature)
+        ]),
+        currentQ.account.tip && React.createElement('div', {
+          className: 'text-xs text-amber-700 dark:text-amber-300 flex items-start gap-1.5 pt-1'
+        }, [
+          React.createElement(Icons.Lightbulb, { size: 14, className: 'shrink-0 mt-0.5 text-amber-500' }),
+          React.createElement('span', {}, currentQ.account.tip)
+        ])
       ])
     ])
   ]);
